@@ -74,7 +74,7 @@ A comprehensive fitness tracking mobile application built with React Native and 
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/purvanshh/fittrack-pro.git
    cd fittrack-pro
    ```
 
