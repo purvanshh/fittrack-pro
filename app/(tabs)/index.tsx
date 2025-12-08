@@ -21,9 +21,6 @@ import { generateId, getCurrentTime, getToday } from '../../utils/dateUtils';
 import {
     getDailyStats,
     getProfile,
-    getTodayMeals,
-    getTodayWater,
-    getTodayWorkouts,
     saveMeal,
     saveWaterIntake,
     saveWorkout
@@ -37,37 +34,54 @@ export default function DashboardScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
     const [showMealModal, setShowMealModal] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(getToday());
+    const [weekDate, setWeekDate] = useState(getToday());
 
-    const loadData = async () => {
-        const [profileData, statsData, workouts, meals, water] = await Promise.all([
-            getProfile(),
-            getDailyStats(getToday()),
-            getTodayWorkouts(),
-            getTodayMeals(),
-            getTodayWater(),
-        ]);
+    const loadData = async (date: string = selectedDate) => {
+        const profileData = await getProfile();
+        const statsData = await getDailyStats(date);
         setProfile(profileData);
         setStats(statsData);
 
-        // Determine active days (days with any activity)
-        const today = getToday();
-        const active: string[] = [];
-        if (workouts.length > 0 || meals.length > 0 || water.length > 0) {
-            active.push(today);
+        // Get active days for the current week
+        const weekStart = new Date(weekDate);
+        const dayOfWeek = weekStart.getDay();
+        weekStart.setDate(weekStart.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+        const activeDaysArray: string[] = [];
+        for (let i = 0; i < 7; i++) {
+            const checkDate = new Date(weekStart);
+            checkDate.setDate(weekStart.getDate() + i);
+            const dateStr = checkDate.toISOString().split('T')[0];
+            const dayStats = await getDailyStats(dateStr);
+            if (dayStats.workoutCount > 0 || dayStats.totalWater > 0 || dayStats.totalCalories > 0) {
+                activeDaysArray.push(dateStr);
+            }
         }
-        setActiveDays(active);
+        setActiveDays(activeDaysArray);
     };
 
     useFocusEffect(
         useCallback(() => {
-            loadData();
-        }, [])
+            loadData(selectedDate);
+        }, [selectedDate, weekDate])
     );
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await loadData();
+        await loadData(selectedDate);
         setRefreshing(false);
+    };
+
+    const handleDateSelect = (date: string) => {
+        setSelectedDate(date);
+        loadData(date);
+    };
+
+    const handleWeekChange = (newWeekDate: string) => {
+        setWeekDate(newWeekDate);
+        setSelectedDate(newWeekDate);
+        loadData(newWeekDate);
     };
 
     const handleAddWorkout = async (workout: Workout) => {
@@ -127,9 +141,25 @@ export default function DashboardScreen() {
 
             {/* Calendar Week */}
             <CalendarWeek
-                currentDate={getToday()}
+                currentDate={weekDate}
+                selectedDate={selectedDate}
                 activeDays={activeDays}
+                onDateSelect={handleDateSelect}
+                onWeekChange={handleWeekChange}
             />
+
+            {/* Selected Date Info */}
+            {selectedDate !== getToday() && (
+                <View style={[styles.dateInfoCard, { backgroundColor: theme.colors.surfaceVariant }]}>
+                    <Ionicons name="calendar" size={16} color={theme.colors.textSecondary} />
+                    <Text style={[styles.dateInfoText, { color: theme.colors.textSecondary }]}>
+                        Viewing: {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                    </Text>
+                    <TouchableOpacity onPress={() => { setSelectedDate(getToday()); setWeekDate(getToday()); loadData(getToday()); }}>
+                        <Text style={[styles.todayLink, { color: theme.colors.primary }]}>Go to Today</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {/* Challenge / Goals Card */}
             <TouchableOpacity
@@ -430,5 +460,21 @@ const styles = StyleSheet.create({
     },
     reportSubtitle: {
         ...typography.caption,
+    },
+    dateInfoCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: spacing.sm,
+        borderRadius: borderRadius.md,
+        marginBottom: spacing.md,
+        gap: spacing.sm,
+    },
+    dateInfoText: {
+        ...typography.bodySmall,
+        flex: 1,
+    },
+    todayLink: {
+        ...typography.bodySmall,
+        fontWeight: '600',
     },
 });
