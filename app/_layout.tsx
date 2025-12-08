@@ -1,24 +1,47 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { ThemeProvider, useTheme } from "../context/ThemeContext";
+import { requestNotificationPermissions } from "../utils/notifications";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+// Keep splash screen visible while loading
+SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+function RootLayoutContent() {
+  const { theme } = useTheme();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    // Initialize app
+    async function initialize() {
+      // Request notification permissions
+      await requestNotificationPermissions();
+
+      // Hide splash screen
+      await SplashScreen.hideAsync();
+    }
+
+    initialize();
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
+    <>
+      <StatusBar style={theme.mode === 'dark' ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
+          animation: 'slide_from_right',
+        }}
+      />
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
     </ThemeProvider>
   );
 }
