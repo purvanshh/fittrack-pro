@@ -7,9 +7,9 @@ import { Theme } from '../types';
 export const lightTheme: Theme = {
     mode: 'light',
     colors: {
-        primary: '#6366F1',      // Indigo
-        primaryLight: '#A5B4FC', // Light indigo
-        secondary: '#8B5CF6',    // Purple
+        primary: '#7C3AED',      // Vibrant Violet
+        primaryLight: '#A78BFA', // Light violet
+        secondary: '#EC4899',    // Pink
         accent: '#F59E0B',       // Amber
         background: '#F8FAFC',   // Slate 50
         surface: '#FFFFFF',
@@ -20,18 +20,18 @@ export const lightTheme: Theme = {
         success: '#10B981',      // Emerald
         warning: '#F59E0B',      // Amber
         error: '#EF4444',        // Red
-        water: '#3B82F6',        // Blue
-        calories: '#F97316',     // Orange
-        workout: '#8B5CF6',      // Purple
+        water: '#0EA5E9',        // Vibrant Sky Blue
+        calories: '#F97316',     // Vibrant Orange
+        workout: '#8B5CF6',      // Vibrant Purple
     },
 };
 
 export const darkTheme: Theme = {
     mode: 'dark',
     colors: {
-        primary: '#818CF8',      // Lighter indigo
-        primaryLight: '#6366F1',
-        secondary: '#A78BFA',    // Lighter purple
+        primary: '#A78BFA',      // Light violet
+        primaryLight: '#8B5CF6', // Violet
+        secondary: '#F472B6',    // Light pink
         accent: '#FBBF24',       // Lighter amber
         background: '#0F172A',   // Slate 900
         surface: '#1E293B',      // Slate 800
@@ -42,10 +42,19 @@ export const darkTheme: Theme = {
         success: '#34D399',      // Lighter emerald
         warning: '#FBBF24',      // Lighter amber
         error: '#F87171',        // Lighter red
-        water: '#60A5FA',        // Lighter blue
-        calories: '#FB923C',     // Lighter orange
-        workout: '#A78BFA',      // Lighter purple
+        water: '#38BDF8',        // Bright sky blue
+        calories: '#FB923C',     // Bright orange
+        workout: '#C4B5FD',      // Light purple
     },
+};
+
+// Gradient colors for special effects
+export const gradients = {
+    water: ['#0EA5E9', '#06B6D4'],    // Sky to Cyan
+    calories: ['#F97316', '#EF4444'], // Orange to Red
+    workout: ['#8B5CF6', '#EC4899'], // Purple to Pink
+    primary: ['#7C3AED', '#EC4899'], // Violet to Pink
+    success: ['#10B981', '#06B6D4'], // Emerald to Cyan
 };
 
 // Spacing scale

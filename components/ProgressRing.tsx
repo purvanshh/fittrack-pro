@@ -30,28 +30,26 @@ export default function ProgressRing({
     const ringColor = color || theme.colors.primary;
     const bgColor = backgroundColor || theme.colors.border;
 
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
+    // Clamp progress between 0 and 1
+    const clampedProgress = Math.min(Math.max(progress, 0), 1);
 
     useEffect(() => {
         if (animated) {
             Animated.timing(animatedProgress, {
-                toValue: Math.min(progress, 1),
+                toValue: clampedProgress,
                 duration: 1000,
                 easing: Easing.out(Easing.cubic),
                 useNativeDriver: false,
             }).start();
         } else {
-            animatedProgress.setValue(Math.min(progress, 1));
+            animatedProgress.setValue(clampedProgress);
         }
-    }, [progress, animated]);
+    }, [clampedProgress, animated]);
 
-    const strokeDashoffset = animatedProgress.interpolate({
-        inputRange: [0, 1],
-        outputRange: [circumference, 0],
-    });
+    const percentage = Math.round(clampedProgress * 100);
 
-    const percentage = Math.round(Math.min(progress, 1) * 100);
+    // For the visual representation, we'll use multiple overlapping half-circles
+    const innerSize = size - strokeWidth * 2;
 
     return (
         <View style={[styles.container, { width: size, height: size }]}>
@@ -69,33 +67,68 @@ export default function ProgressRing({
                 ]}
             />
 
-            {/* Progress Ring using animated rotation technique */}
-            <Animated.View
-                style={[
-                    styles.progressRing,
-                    {
-                        width: size,
-                        height: size,
-                        borderRadius: size / 2,
-                        borderWidth: strokeWidth,
-                        borderColor: ringColor,
-                        borderTopColor: 'transparent',
-                        borderRightColor: progress > 0.25 ? ringColor : 'transparent',
-                        borderBottomColor: progress > 0.5 ? ringColor : 'transparent',
-                        borderLeftColor: progress > 0.75 ? ringColor : 'transparent',
-                        transform: [{ rotate: '-90deg' }],
-                    },
-                ]}
-            />
+            {/* Progress Ring - Left Half (0-50%) */}
+            <View style={[styles.halfContainer, { width: size / 2, height: size, left: 0 }]}>
+                <Animated.View
+                    style={[
+                        styles.halfCircle,
+                        {
+                            width: size,
+                            height: size,
+                            borderRadius: size / 2,
+                            borderWidth: strokeWidth,
+                            borderColor: ringColor,
+                            borderRightColor: 'transparent',
+                            borderTopColor: 'transparent',
+                            left: 0,
+                            transform: [
+                                {
+                                    rotate: animatedProgress.interpolate({
+                                        inputRange: [0, 0.5, 1],
+                                        outputRange: ['0deg', '180deg', '180deg'],
+                                    }),
+                                },
+                            ],
+                        },
+                    ]}
+                />
+            </View>
+
+            {/* Progress Ring - Right Half (50-100%) */}
+            <View style={[styles.halfContainer, { width: size / 2, height: size, right: 0 }]}>
+                <Animated.View
+                    style={[
+                        styles.halfCircle,
+                        {
+                            width: size,
+                            height: size,
+                            borderRadius: size / 2,
+                            borderWidth: strokeWidth,
+                            borderColor: ringColor,
+                            borderLeftColor: 'transparent',
+                            borderBottomColor: 'transparent',
+                            right: 0,
+                            transform: [
+                                {
+                                    rotate: animatedProgress.interpolate({
+                                        inputRange: [0, 0.5, 1],
+                                        outputRange: ['0deg', '0deg', '180deg'],
+                                    }),
+                                },
+                            ],
+                        },
+                    ]}
+                />
+            </View>
 
             {/* Center Content */}
-            <View style={styles.centerContent}>
+            <View style={[styles.centerContent, { width: innerSize, height: innerSize }]}>
                 {value ? (
-                    <Text style={[styles.value, { color: theme.colors.text }]}>
+                    <Text style={[styles.value, { color: ringColor }]} numberOfLines={1} adjustsFontSizeToFit>
                         {value}
                     </Text>
                 ) : (
-                    <Text style={[styles.percentage, { color: theme.colors.text }]}>
+                    <Text style={[styles.percentage, { color: ringColor }]}>
                         {percentage}%
                     </Text>
                 )}
@@ -117,7 +150,11 @@ const styles = StyleSheet.create({
     ring: {
         position: 'absolute',
     },
-    progressRing: {
+    halfContainer: {
+        position: 'absolute',
+        overflow: 'hidden',
+    },
+    halfCircle: {
         position: 'absolute',
     },
     centerContent: {
@@ -125,7 +162,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     value: {
-        ...typography.h3,
+        fontSize: 18,
+        fontWeight: '700',
     },
     percentage: {
         ...typography.h2,

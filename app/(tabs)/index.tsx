@@ -75,9 +75,13 @@ export default function DashboardScreen() {
         await loadData();
     };
 
-    const waterProgress = (stats?.totalWater || 0) / (profile?.goals.dailyWater || 2500);
-    const calorieProgress = (stats?.totalCalories || 0) / (profile?.goals.dailyCalories || 2000);
-    const workoutProgress = (stats?.workoutCount || 0) / Math.ceil((profile?.goals.weeklyWorkouts || 5) / 7);
+    const waterGoal = profile?.goals.dailyWater || 2500;
+    const calorieGoal = profile?.goals.dailyCalories || 2000;
+    const workoutGoal = profile?.goals.weeklyWorkouts || 5;
+
+    const waterProgress = (stats?.totalWater || 0) / waterGoal;
+    const calorieProgress = (stats?.totalCalories || 0) / calorieGoal;
+    const workoutProgress = (stats?.workoutCount || 0) / Math.ceil(workoutGoal / 7);
 
     return (
         <ScrollView
@@ -87,20 +91,59 @@ export default function DashboardScreen() {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
-            {/* Date Header */}
+            {/* Date Header with Streak */}
             <View style={styles.dateHeader}>
-                <Text style={[styles.dateText, { color: theme.colors.textSecondary }]}>
-                    {formatDateLong(getToday())}
-                </Text>
+                <View>
+                    <Text style={[styles.greeting, { color: theme.colors.text }]}>
+                        {profile?.name ? `Hi, ${profile.name}! 👋` : 'Welcome! 👋'}
+                    </Text>
+                    <Text style={[styles.dateText, { color: theme.colors.textSecondary }]}>
+                        {formatDateLong(getToday())}
+                    </Text>
+                </View>
                 {profile && profile.streak > 0 && (
-                    <View style={[styles.streakBadge, { backgroundColor: theme.colors.accent + '20' }]}>
-                        <Ionicons name="flame" size={16} color={theme.colors.accent} />
+                    <View style={[styles.streakBadge, { backgroundColor: theme.colors.accent + '25' }]}>
+                        <Ionicons name="flame" size={18} color={theme.colors.accent} />
                         <Text style={[styles.streakText, { color: theme.colors.accent }]}>
-                            {profile.streak} day streak
+                            {profile.streak}
                         </Text>
                     </View>
                 )}
             </View>
+
+            {/* Your Goals Card */}
+            <TouchableOpacity
+                style={[styles.goalsCard, { backgroundColor: theme.colors.primary }, shadows.md]}
+                onPress={() => router.push('/profile')}
+                activeOpacity={0.8}
+            >
+                <View style={styles.goalsHeader}>
+                    <Text style={styles.goalsTitle}>Your Daily Goals</Text>
+                    <View style={styles.editBadge}>
+                        <Ionicons name="pencil" size={12} color={theme.colors.primary} />
+                        <Text style={[styles.editText, { color: theme.colors.primary }]}>Edit</Text>
+                    </View>
+                </View>
+                <View style={styles.goalsRow}>
+                    <View style={styles.goalItem}>
+                        <Ionicons name="water" size={20} color="rgba(255,255,255,0.9)" />
+                        <Text style={styles.goalValue}>{formatWater(waterGoal)}</Text>
+                        <Text style={styles.goalLabel}>Water</Text>
+                    </View>
+                    <View style={[styles.goalDivider, { backgroundColor: 'rgba(255,255,255,0.3)' }]} />
+                    <View style={styles.goalItem}>
+                        <Ionicons name="flame" size={20} color="rgba(255,255,255,0.9)" />
+                        <Text style={styles.goalValue}>{calorieGoal}</Text>
+                        <Text style={styles.goalLabel}>Calories</Text>
+                    </View>
+                    <View style={[styles.goalDivider, { backgroundColor: 'rgba(255,255,255,0.3)' }]} />
+                    <View style={styles.goalItem}>
+                        <Ionicons name="barbell" size={20} color="rgba(255,255,255,0.9)" />
+                        <Text style={styles.goalValue}>{workoutGoal}/wk</Text>
+                        <Text style={styles.goalLabel}>Workouts</Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
 
             {/* Progress Rings */}
             <View style={[styles.progressSection, { backgroundColor: theme.colors.surface }, shadows.md]}>
@@ -114,8 +157,12 @@ export default function DashboardScreen() {
                             color={theme.colors.water}
                             label="Water"
                             value={formatWater(stats?.totalWater || 0)}
-                            size={100}
+                            size={95}
+                            strokeWidth={8}
                         />
+                        <Text style={[styles.ringGoal, { color: theme.colors.textSecondary }]}>
+                            / {formatWater(waterGoal)}
+                        </Text>
                     </View>
                     <View style={styles.ringWrapper}>
                         <ProgressRing
@@ -123,8 +170,12 @@ export default function DashboardScreen() {
                             color={theme.colors.calories}
                             label="Calories"
                             value={`${stats?.totalCalories || 0}`}
-                            size={100}
+                            size={95}
+                            strokeWidth={8}
                         />
+                        <Text style={[styles.ringGoal, { color: theme.colors.textSecondary }]}>
+                            / {calorieGoal}
+                        </Text>
                     </View>
                     <View style={styles.ringWrapper}>
                         <ProgressRing
@@ -132,8 +183,12 @@ export default function DashboardScreen() {
                             color={theme.colors.workout}
                             label="Workout"
                             value={`${stats?.workoutCount || 0}`}
-                            size={100}
+                            size={95}
+                            strokeWidth={8}
                         />
+                        <Text style={[styles.ringGoal, { color: theme.colors.textSecondary }]}>
+                            today
+                        </Text>
                     </View>
                 </View>
             </View>
@@ -176,7 +231,7 @@ export default function DashboardScreen() {
                     iconColor={theme.colors.water}
                     title="Water Intake"
                     value={formatWater(stats?.totalWater || 0)}
-                    subtitle={`Goal: ${formatWater(profile?.goals.dailyWater || 2500)}`}
+                    subtitle={`${Math.round(waterProgress * 100)}% of goal`}
                     style={styles.statCard}
                 />
                 <StatCard
@@ -184,7 +239,7 @@ export default function DashboardScreen() {
                     iconColor={theme.colors.calories}
                     title="Calories"
                     value={`${stats?.totalCalories || 0}`}
-                    subtitle={`Goal: ${profile?.goals.dailyCalories || 2000}`}
+                    subtitle={`${Math.round(calorieProgress * 100)}% of goal`}
                     style={styles.statCard}
                 />
                 <StatCard
@@ -201,7 +256,7 @@ export default function DashboardScreen() {
             <TouchableOpacity
                 style={[
                     styles.weeklyReportButton,
-                    { backgroundColor: theme.colors.primary },
+                    { backgroundColor: theme.colors.secondary },
                     shadows.md,
                 ]}
                 onPress={() => router.push('/weekly-report')}
@@ -240,20 +295,76 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: spacing.md,
     },
+    greeting: {
+        ...typography.h2,
+        marginBottom: 2,
+    },
     dateText: {
-        ...typography.body,
+        ...typography.bodySmall,
     },
     streakBadge: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        gap: 2,
+    },
+    streakText: {
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    goalsCard: {
+        padding: spacing.lg,
+        borderRadius: borderRadius.lg,
+        marginBottom: spacing.md,
+    },
+    goalsHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    goalsTitle: {
+        ...typography.body,
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+    editBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
         paddingHorizontal: spacing.sm,
         paddingVertical: spacing.xs,
         borderRadius: borderRadius.full,
         gap: 4,
     },
-    streakText: {
-        ...typography.caption,
+    editText: {
+        fontSize: 12,
         fontWeight: '600',
+    },
+    goalsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
+    goalItem: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    goalValue: {
+        ...typography.h3,
+        color: '#FFFFFF',
+        marginTop: 4,
+    },
+    goalLabel: {
+        ...typography.caption,
+        color: 'rgba(255,255,255,0.8)',
+    },
+    goalDivider: {
+        width: 1,
+        height: 40,
     },
     progressSection: {
         padding: spacing.lg,
@@ -269,6 +380,10 @@ const styles = StyleSheet.create({
     },
     ringWrapper: {
         alignItems: 'center',
+    },
+    ringGoal: {
+        ...typography.caption,
+        marginTop: 4,
     },
     quickActions: {
         flexDirection: 'row',
