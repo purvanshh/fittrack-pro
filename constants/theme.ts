@@ -1,60 +1,91 @@
 import { Theme } from '../types';
 
 // ============================================
-// FitTrack Pro - Theme Configuration
+// FitTrack Pro - Neo-Futuristic Theme
 // ============================================
 
 export const lightTheme: Theme = {
     mode: 'light',
     colors: {
-        primary: '#7C3AED',      // Vibrant Violet
-        primaryLight: '#A78BFA', // Light violet
-        secondary: '#EC4899',    // Pink
-        accent: '#F59E0B',       // Amber
-        background: '#F8FAFC',   // Slate 50
+        // Core backgrounds
+        background: '#F5F5F7',
         surface: '#FFFFFF',
-        surfaceVariant: '#F1F5F9', // Slate 100
-        text: '#1E293B',         // Slate 800
-        textSecondary: '#64748B', // Slate 500
-        border: '#E2E8F0',       // Slate 200
-        success: '#10B981',      // Emerald
-        warning: '#F59E0B',      // Amber
-        error: '#EF4444',        // Red
-        water: '#0EA5E9',        // Vibrant Sky Blue
-        calories: '#F97316',     // Vibrant Orange
-        workout: '#8B5CF6',      // Vibrant Purple
+        surfaceVariant: '#F0F0F2',
+
+        // Primary accents - Lime neon
+        primary: '#9ACD32',        // Softer lime for light mode
+        primaryLight: '#C8F549',
+
+        // Secondary - Lavender
+        secondary: '#B794F6',
+
+        // Accent - Pink
+        accent: '#FF9ECD',
+
+        // Text
+        text: '#1A1A1A',
+        textSecondary: '#6B6B6B',
+
+        // Borders
+        border: '#E0E0E0',
+
+        // Status colors
+        success: '#4CAF50',
+        warning: '#FF9800',
+        error: '#F44336',
+
+        // Tracker colors
+        water: '#42A5F5',        // Sky blue
+        calories: '#FF7043',      // Orange-red
+        workout: '#7E57C2',       // Purple
     },
 };
 
 export const darkTheme: Theme = {
     mode: 'dark',
     colors: {
-        primary: '#A78BFA',      // Light violet
-        primaryLight: '#8B5CF6', // Violet
-        secondary: '#F472B6',    // Light pink
-        accent: '#FBBF24',       // Lighter amber
-        background: '#0F172A',   // Slate 900
-        surface: '#1E293B',      // Slate 800
-        surfaceVariant: '#334155', // Slate 700
-        text: '#F1F5F9',         // Slate 100
-        textSecondary: '#94A3B8', // Slate 400
-        border: '#475569',       // Slate 600
-        success: '#34D399',      // Lighter emerald
-        warning: '#FBBF24',      // Lighter amber
-        error: '#F87171',        // Lighter red
-        water: '#38BDF8',        // Bright sky blue
-        calories: '#FB923C',     // Bright orange
-        workout: '#C4B5FD',      // Light purple
+        // Core backgrounds - Deep dark
+        background: '#0D0D0D',
+        surface: '#1A1A1A',
+        surfaceVariant: '#222222',
+
+        // Primary accents - Neon lime
+        primary: '#D6FF63',
+        primaryLight: '#E9FF8C',
+
+        // Secondary - Lavender
+        secondary: '#DCC7FF',
+
+        // Accent - Pink
+        accent: '#FFCDEB',
+
+        // Text
+        text: '#FFFFFF',
+        textSecondary: '#A1A1A1',
+
+        // Borders
+        border: '#303030',
+
+        // Status colors
+        success: '#A7FF4F',
+        warning: '#F9D94A',
+        error: '#FF6B6B',
+
+        // Tracker colors
+        water: '#7BC6FF',         // Sky blue
+        calories: '#E7F57A',      // Yellow-green for fire
+        workout: '#A98BFF',       // Purple
     },
 };
 
-// Gradient colors for special effects
+// Gradient definitions for use with LinearGradient
 export const gradients = {
-    water: ['#0EA5E9', '#06B6D4'],    // Sky to Cyan
-    calories: ['#F97316', '#EF4444'], // Orange to Red
-    workout: ['#8B5CF6', '#EC4899'], // Purple to Pink
-    primary: ['#7C3AED', '#EC4899'], // Violet to Pink
-    success: ['#10B981', '#06B6D4'], // Emerald to Cyan
+    lime: ['#C8F549', '#E9FF8C'],
+    lavenderPink: ['#DCC7FF', '#FFCDEB'],
+    purple: ['#CFA9FF', '#9F72D8'],
+    fire: ['#FFB347', '#FF6B6B'],
+    water: ['#7BC6FF', '#42A5F5'],
+    cardOverlay: ['transparent', 'rgba(0,0,0,0.4)'],
 };
 
 // Spacing scale
@@ -67,12 +98,12 @@ export const spacing = {
     xxl: 48,
 };
 
-// Border radius
+// Border radius - Rounded, bubbly shapes
 export const borderRadius = {
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 24,
+    sm: 12,
+    md: 16,
+    lg: 24,
+    xl: 32,
     full: 9999,
 };
 
@@ -115,27 +146,34 @@ export const typography = {
     },
 };
 
-// Shadow styles
+// Shadow styles - Soft glow for dark theme
 export const shadows = {
     sm: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 2,
     },
     md: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 3,
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     lg: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 15,
-        elevation: 5,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
+        elevation: 8,
     },
+    glow: (color: string) => ({
+        shadowColor: color,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+        elevation: 6,
+    }),
 };

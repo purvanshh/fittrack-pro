@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: spacing.md,
-        paddingBottom: spacing.xxl,
+        paddingBottom: 120,
     },
     overviewCard: {
         padding: spacing.lg,

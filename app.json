@@ -4,7 +4,6 @@
     "slug": "fittrack-pro",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
     "scheme": "fittrackpro",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
