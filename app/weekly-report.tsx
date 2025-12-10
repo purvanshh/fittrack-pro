@@ -62,17 +62,21 @@ export default function WeeklyReportScreen() {
     };
 
     const chartConfig = {
-        backgroundGradientFrom: 'transparent',
-        backgroundGradientTo: 'transparent',
+        backgroundGradientFrom: 'rgba(0, 0, 0, 0)',
+        backgroundGradientFromOpacity: 0,
+        backgroundGradientTo: 'rgba(0, 0, 0, 0)',
+        backgroundGradientToOpacity: 0,
         color: (opacity = 1) => theme.colors.primary + Math.round(opacity * 255).toString(16).padStart(2, '0'),
         labelColor: () => theme.colors.textSecondary,
         decimalPlaces: 1,
         propsForBackgroundLines: {
             strokeDasharray: '5,5',
-            stroke: theme.colors.border,
+            stroke: theme.colors.border + '40',
         },
         fillShadowGradient: theme.colors.primary,
         fillShadowGradientOpacity: 0.3,
+        barPercentage: 0.6,
+        useShadowColorFromDataset: false,
     };
 
     if (loading) {
@@ -95,11 +99,7 @@ export default function WeeklyReportScreen() {
         <View style={styles.wrapper}>
             <Stack.Screen
                 options={{
-                    headerShown: true,
-                    title: 'Weekly Report',
-                    headerTransparent: true,
-                    headerStyle: { backgroundColor: 'transparent' },
-                    headerTintColor: theme.colors.text,
+                    headerShown: false,
                 }}
             />
 
@@ -119,7 +119,10 @@ export default function WeeklyReportScreen() {
                 style={styles.container}
                 contentContainerStyle={styles.content}
             >
-                {/* Summary Cards */}
+                {/* Custom Header */}
+                <View style={styles.customHeader}>
+                    <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Weekly Report</Text>
+                </View>
                 <View style={styles.summaryGrid}>
                     <View style={[styles.summaryCard, shadows.glow(theme.colors.workout)]}>
                         <LinearGradient
@@ -257,14 +260,23 @@ export default function WeeklyReportScreen() {
 const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
+        backgroundColor: '#0D0D0D', // Prevent white flash on navigation
     },
     container: {
         flex: 1,
     },
     content: {
         padding: spacing.md,
-        paddingTop: 100,
+        paddingTop: 60,
         paddingBottom: spacing.xxl,
+    },
+    customHeader: {
+        paddingTop: 40,
+        paddingBottom: spacing.lg,
+        marginBottom: spacing.sm,
+    },
+    headerTitle: {
+        ...typography.h1,
     },
     loadingContainer: {
         flex: 1,

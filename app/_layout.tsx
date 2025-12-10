@@ -26,12 +26,13 @@ function RootLayoutContent() {
 
   return (
     <>
-      <StatusBar style={theme.mode === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background },
-          animation: 'slide_from_right',
+          contentStyle: { backgroundColor: '#0D0D0D' },
+          animation: 'fade',
+          animationDuration: 200,
         }}
       />
     </>
