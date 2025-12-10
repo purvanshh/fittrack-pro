@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -9,7 +10,8 @@ import {
     View,
 } from 'react-native';
 import { BarChart, LineChart } from 'react-native-chart-kit';
-import { borderRadius, shadows, spacing, typography } from '../constants/theme';
+import GlassCard from '../components/GlassCard';
+import { borderRadius, gradients, shadows, spacing, typography } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
 import { DailyStats } from '../types';
 import { formatWater, getDayName } from '../utils/dateUtils';
@@ -19,6 +21,7 @@ const screenWidth = Dimensions.get('window').width - spacing.md * 2;
 
 export default function WeeklyReportScreen() {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const [weeklyStats, setWeeklyStats] = useState<DailyStats[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -59,8 +62,8 @@ export default function WeeklyReportScreen() {
     };
 
     const chartConfig = {
-        backgroundGradientFrom: theme.colors.surface,
-        backgroundGradientTo: theme.colors.surface,
+        backgroundGradientFrom: 'transparent',
+        backgroundGradientTo: 'transparent',
         color: (opacity = 1) => theme.colors.primary + Math.round(opacity * 255).toString(16).padStart(2, '0'),
         labelColor: () => theme.colors.textSecondary,
         decimalPlaces: 1,
@@ -68,43 +71,85 @@ export default function WeeklyReportScreen() {
             strokeDasharray: '5,5',
             stroke: theme.colors.border,
         },
+        fillShadowGradient: theme.colors.primary,
+        fillShadowGradientOpacity: 0.3,
     };
 
     if (loading) {
         return (
-            <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-                <Text style={{ color: theme.colors.text }}>Loading...</Text>
+            <View style={styles.wrapper}>
+                <LinearGradient
+                    colors={isDark ? gradients.darkBackground : gradients.lightBackground}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                />
+                <View style={styles.loadingContainer}>
+                    <Text style={{ color: theme.colors.text }}>Loading...</Text>
+                </View>
             </View>
         );
     }
 
     return (
-        <>
+        <View style={styles.wrapper}>
             <Stack.Screen
                 options={{
                     headerShown: true,
                     title: 'Weekly Report',
-                    headerStyle: { backgroundColor: theme.colors.surface },
+                    headerTransparent: true,
+                    headerStyle: { backgroundColor: 'transparent' },
                     headerTintColor: theme.colors.text,
                 }}
             />
+
+            {/* Gradient Background */}
+            <LinearGradient
+                colors={isDark ? gradients.darkBackground : gradients.lightBackground}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+            />
+
+            {/* Decorative Orbs */}
+            <View style={[styles.gradientOrb, styles.orbPrimary, { backgroundColor: theme.colors.primary }]} />
+            <View style={[styles.gradientOrb, styles.orbSecondary, { backgroundColor: theme.colors.secondary }]} />
+
             <ScrollView
-                style={[styles.container, { backgroundColor: theme.colors.background }]}
+                style={styles.container}
                 contentContainerStyle={styles.content}
             >
                 {/* Summary Cards */}
                 <View style={styles.summaryGrid}>
-                    <View style={[styles.summaryCard, { backgroundColor: theme.colors.workout }, shadows.md]}>
+                    <View style={[styles.summaryCard, shadows.glow(theme.colors.workout)]}>
+                        <LinearGradient
+                            colors={gradients.workout}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFill}
+                        />
                         <Ionicons name="barbell" size={28} color="#FFFFFF" />
                         <Text style={styles.summaryValue}>{totalWorkouts}</Text>
                         <Text style={styles.summaryLabel}>Total Workouts</Text>
                     </View>
-                    <View style={[styles.summaryCard, { backgroundColor: theme.colors.water }, shadows.md]}>
+                    <View style={[styles.summaryCard, shadows.glow(theme.colors.water)]}>
+                        <LinearGradient
+                            colors={gradients.water}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFill}
+                        />
                         <Ionicons name="water" size={28} color="#FFFFFF" />
                         <Text style={styles.summaryValue}>{formatWater(totalWater)}</Text>
                         <Text style={styles.summaryLabel}>Total Water</Text>
                     </View>
-                    <View style={[styles.summaryCard, { backgroundColor: theme.colors.calories }, shadows.md]}>
+                    <View style={[styles.summaryCard, shadows.glow(theme.colors.calories)]}>
+                        <LinearGradient
+                            colors={gradients.calories}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFill}
+                        />
                         <Ionicons name="flame" size={28} color="#FFFFFF" />
                         <Text style={styles.summaryValue}>{totalCalories}</Text>
                         <Text style={styles.summaryLabel}>Total Calories</Text>
@@ -112,7 +157,7 @@ export default function WeeklyReportScreen() {
                 </View>
 
                 {/* Insights */}
-                <View style={[styles.insightsCard, { backgroundColor: theme.colors.surface }, shadows.md]}>
+                <GlassCard style={styles.insightsCard} variant="surface">
                     <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
                         Insights
                     </Text>
@@ -147,7 +192,7 @@ export default function WeeklyReportScreen() {
                         </View>
                     </View>
 
-                    <View style={styles.insightRow}>
+                    <View style={[styles.insightRow, { marginBottom: 0 }]}>
                         <View style={[styles.insightIcon, { backgroundColor: theme.colors.calories + '20' }]}>
                             <Ionicons name="flame" size={20} color={theme.colors.calories} />
                         </View>
@@ -160,10 +205,10 @@ export default function WeeklyReportScreen() {
                             </Text>
                         </View>
                     </View>
-                </View>
+                </GlassCard>
 
                 {/* Water Chart */}
-                <View style={[styles.chartCard, { backgroundColor: theme.colors.surface }, shadows.md]}>
+                <GlassCard style={styles.chartCard} variant="surface">
                     <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
                         Water Intake (L)
                     </Text>
@@ -174,16 +219,17 @@ export default function WeeklyReportScreen() {
                         chartConfig={{
                             ...chartConfig,
                             color: () => theme.colors.water,
+                            fillShadowGradient: theme.colors.water,
                         }}
                         bezier
                         style={styles.chart}
                         withInnerLines={false}
                         withOuterLines={false}
                     />
-                </View>
+                </GlassCard>
 
                 {/* Calories Chart */}
-                <View style={[styles.chartCard, { backgroundColor: theme.colors.surface }, shadows.md]}>
+                <GlassCard style={styles.chartCard} variant="surface">
                     <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
                         Calories Consumed
                     </Text>
@@ -194,6 +240,7 @@ export default function WeeklyReportScreen() {
                         chartConfig={{
                             ...chartConfig,
                             color: () => theme.colors.calories,
+                            fillShadowGradient: theme.colors.calories,
                         }}
                         style={styles.chart}
                         showValuesOnTopOfBars
@@ -201,18 +248,22 @@ export default function WeeklyReportScreen() {
                         yAxisLabel=""
                         yAxisSuffix=""
                     />
-                </View>
+                </GlassCard>
             </ScrollView>
-        </>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+    },
     container: {
         flex: 1,
     },
     content: {
         padding: spacing.md,
+        paddingTop: 100,
         paddingBottom: spacing.xxl,
     },
     loadingContainer: {
@@ -220,16 +271,35 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    // Decorative gradient orbs
+    gradientOrb: {
+        position: 'absolute',
+        borderRadius: 200,
+        opacity: 0.15,
+    },
+    orbPrimary: {
+        width: 300,
+        height: 300,
+        top: -50,
+        right: -100,
+    },
+    orbSecondary: {
+        width: 200,
+        height: 200,
+        bottom: 100,
+        left: -80,
+    },
     summaryGrid: {
         flexDirection: 'row',
         gap: spacing.sm,
-        marginBottom: spacing.md,
+        marginBottom: spacing.lg,
     },
     summaryCard: {
         flex: 1,
         alignItems: 'center',
         padding: spacing.md,
         borderRadius: borderRadius.lg,
+        overflow: 'hidden',
     },
     summaryValue: {
         ...typography.h2,
@@ -238,7 +308,7 @@ const styles = StyleSheet.create({
     },
     summaryLabel: {
         ...typography.caption,
-        color: 'rgba(255,255,255,0.8)',
+        color: 'rgba(255,255,255,0.85)',
         textAlign: 'center',
     },
     sectionTitle: {
@@ -246,8 +316,6 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     insightsCard: {
-        padding: spacing.lg,
-        borderRadius: borderRadius.lg,
         marginBottom: spacing.md,
     },
     insightRow: {
@@ -256,9 +324,9 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     insightIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: borderRadius.md,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: spacing.md,
@@ -274,8 +342,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     chartCard: {
-        padding: spacing.lg,
-        borderRadius: borderRadius.lg,
         marginBottom: spacing.md,
     },
     chart: {
@@ -283,3 +349,4 @@ const styles = StyleSheet.create({
         marginLeft: -spacing.md,
     },
 });
+

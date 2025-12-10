@@ -58,6 +58,7 @@ export interface NotificationPreferences {
 
 export interface UserProfile {
     name: string;
+    avatar?: string; // Avatar preset ID (e.g., 'fitness', 'runner', 'yoga')
     weight?: number; // in kg
     height?: number; // in cm
     goals: UserGoals;
@@ -99,9 +100,13 @@ export interface Theme {
         background: string;
         surface: string;
         surfaceVariant: string;
+        // Glass-specific colors
+        glassSurface: string;
+        glassBackground: string;
         text: string;
         textSecondary: string;
         border: string;
+        glassBorder: string;
         success: string;
         warning: string;
         error: string;
@@ -136,11 +141,24 @@ export const DEFAULT_NOTIFICATIONS: NotificationPreferences = {
 
 export const DEFAULT_PROFILE: UserProfile = {
     name: '',
+    avatar: 'star', // Default avatar
     goals: DEFAULT_GOALS,
     notifications: DEFAULT_NOTIFICATIONS,
     streak: 0,
     lastActiveDate: new Date().toISOString().split('T')[0],
 };
+
+// Avatar preset options
+export const AVATAR_PRESETS = [
+    { id: 'fitness', emoji: '🏋️', label: 'Fitness' },
+    { id: 'runner', emoji: '🏃', label: 'Runner' },
+    { id: 'yoga', emoji: '🧘', label: 'Yoga' },
+    { id: 'cyclist', emoji: '🚴', label: 'Cyclist' },
+    { id: 'swimmer', emoji: '🏊', label: 'Swimmer' },
+    { id: 'energy', emoji: '⚡', label: 'Energy' },
+    { id: 'star', emoji: '🌟', label: 'Star' },
+    { id: 'fire', emoji: '🔥', label: 'Fire' },
+];
 
 // Workout type display names and icons
 export const WORKOUT_TYPES: Record<WorkoutType, { label: string; icon: string }> = {
@@ -156,3 +174,4 @@ export const WORKOUT_TYPES: Record<WorkoutType, { label: string; icon: string }>
 
 // Water presets in ml
 export const WATER_PRESETS = [150, 250, 350, 500];
+

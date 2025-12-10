@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { borderRadius, shadows, spacing, typography } from '../constants/theme';
+import { borderRadius, glassStyles, shadows, spacing, typography } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
 
 interface StatCardProps {
@@ -22,21 +23,31 @@ export default function StatCard({
     style,
 }: StatCardProps) {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const color = iconColor || theme.colors.primary;
+    const glassStyle = isDark ? glassStyles.dark.card : glassStyles.light.card;
 
     return (
         <View
             style={[
                 styles.container,
-                {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.border,
-                },
-                shadows.sm,
+                glassStyle,
+                shadows.glass,
                 style,
             ]}
         >
-            <View style={[styles.iconContainer, { backgroundColor: color + '15' }]}>
+            {/* Glass gradient overlay */}
+            <LinearGradient
+                colors={isDark
+                    ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'] as const
+                    : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.3)'] as const
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+            />
+
+            <View style={[styles.iconContainer, { backgroundColor: color + '20' }, isDark && shadows.neon(color)]}>
                 <Ionicons name={icon} size={22} color={color} />
             </View>
             <View style={styles.content}>
@@ -61,13 +72,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: spacing.md,
-        borderRadius: borderRadius.md,
-        borderWidth: 1,
+        borderRadius: borderRadius.lg,
+        overflow: 'hidden',
     },
     iconContainer: {
-        width: 44,
-        height: 44,
-        borderRadius: borderRadius.sm,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: spacing.md,
@@ -87,3 +98,4 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
 });
+

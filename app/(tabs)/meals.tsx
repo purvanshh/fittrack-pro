@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
@@ -10,8 +11,9 @@ import {
     View,
 } from 'react-native';
 import AddMealModal from '../../components/AddMealModal';
+import GlassCard from '../../components/GlassCard';
 import MealCard from '../../components/MealCard';
-import { borderRadius, shadows, spacing, typography } from '../../constants/theme';
+import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
 import { Meal, UserProfile } from '../../types';
 import {
@@ -23,10 +25,13 @@ import {
 
 export default function MealsScreen() {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const [todayMeals, setTodayMeals] = useState<Meal[]>([]);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [showModal, setShowModal] = useState(false);
+
+    const glassStyle = isDark ? glassStyles.dark : glassStyles.light;
 
     const loadData = async () => {
         const [meals, profileData] = await Promise.all([
@@ -71,143 +76,191 @@ export default function MealsScreen() {
     };
 
     return (
-        <ScrollView
-            style={[styles.container, { backgroundColor: theme.colors.background }]}
-            contentContainerStyle={styles.content}
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-        >
-            {/* Calorie Overview */}
-            <View style={[styles.overviewCard, { backgroundColor: theme.colors.surface }, shadows.md]}>
-                <View style={styles.overviewHeader}>
-                    <Text style={[styles.overviewTitle, { color: theme.colors.textSecondary }]}>
-                        Today's Calories
-                    </Text>
-                    <View style={[styles.goalBadge, { backgroundColor: theme.colors.surfaceVariant }]}>
-                        <Ionicons name="flag" size={14} color={theme.colors.textSecondary} />
-                        <Text style={[styles.goalText, { color: theme.colors.textSecondary }]}>
-                            Goal: {goal}
+        <View style={styles.wrapper}>
+            {/* Gradient Background */}
+            <LinearGradient
+                colors={isDark ? gradients.darkBackground : gradients.lightBackground}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+            />
+
+            {/* Decorative Gradient Orbs */}
+            <View style={[styles.gradientOrb, styles.orbPrimary, { backgroundColor: theme.colors.primary }]} />
+            <View style={[styles.gradientOrb, styles.orbSecondary, { backgroundColor: theme.colors.secondary }]} />
+            <View style={[styles.gradientOrb, styles.orbAccent, { backgroundColor: theme.colors.accent }]} />
+
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.content}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.calories} />
+                }
+            >
+                {/* Calorie Overview */}
+                <GlassCard style={styles.overviewCard} variant="surface">
+                    <View style={styles.overviewHeader}>
+                        <Text style={[styles.overviewTitle, { color: theme.colors.textSecondary }]}>
+                            Today's Calories
                         </Text>
-                    </View>
-                </View>
-
-                <View style={styles.calorieDisplay}>
-                    <Text style={[styles.calorieValue, { color: theme.colors.text }]}>
-                        {totalCalories}
-                    </Text>
-                    <Text style={[styles.calorieUnit, { color: theme.colors.textSecondary }]}>
-                        kcal
-                    </Text>
-                </View>
-
-                {/* Progress Bar */}
-                <View style={[styles.progressBarBg, { backgroundColor: theme.colors.surfaceVariant }]}>
-                    <View
-                        style={[
-                            styles.progressBarFill,
-                            {
-                                backgroundColor: getProgressColor(),
-                                width: `${Math.min(progress * 100, 100)}%`,
-                            },
-                        ]}
-                    />
-                </View>
-
-                <View style={styles.progressLabels}>
-                    <Text style={[styles.progressLabel, { color: theme.colors.textSecondary }]}>
-                        {Math.round(progress * 100)}% of daily goal
-                    </Text>
-                    {remaining > 0 ? (
-                        <Text style={[styles.remainingLabel, { color: theme.colors.success }]}>
-                            {remaining} remaining
-                        </Text>
-                    ) : (
-                        <Text style={[styles.remainingLabel, { color: theme.colors.error }]}>
-                            {Math.abs(goal - totalCalories)} over
-                        </Text>
-                    )}
-                </View>
-            </View>
-
-            {/* Meal Type Breakdown */}
-            <View style={styles.breakdownRow}>
-                {['breakfast', 'lunch', 'dinner', 'snack'].map((type) => {
-                    const typeMeals = todayMeals.filter(m => m.mealType === type);
-                    const typeCalories = typeMeals.reduce((sum, m) => sum + m.calories, 0);
-                    return (
-                        <View
-                            key={type}
-                            style={[
-                                styles.breakdownItem,
-                                { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
-                            ]}
-                        >
-                            <Text style={[styles.breakdownType, { color: theme.colors.textSecondary }]}>
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                            </Text>
-                            <Text style={[styles.breakdownValue, { color: theme.colors.text }]}>
-                                {typeCalories}
+                        <View style={[styles.goalBadge, glassStyle.subtle]}>
+                            <Ionicons name="flag" size={14} color={theme.colors.textSecondary} />
+                            <Text style={[styles.goalText, { color: theme.colors.textSecondary }]}>
+                                Goal: {goal}
                             </Text>
                         </View>
-                    );
-                })}
-            </View>
+                    </View>
 
-            {/* Add Meal Button */}
-            <TouchableOpacity
-                style={[styles.addButton, { backgroundColor: theme.colors.primary }, shadows.md]}
-                onPress={() => setShowModal(true)}
-            >
-                <Ionicons name="add-circle" size={24} color="#FFFFFF" />
-                <Text style={styles.addButtonText}>Log Meal</Text>
-            </TouchableOpacity>
+                    <View style={styles.calorieDisplay}>
+                        <Text style={[styles.calorieValue, { color: theme.colors.text }]}>
+                            {totalCalories}
+                        </Text>
+                        <Text style={[styles.calorieUnit, { color: theme.colors.textSecondary }]}>
+                            kcal
+                        </Text>
+                    </View>
 
-            {/* Today's Meals List */}
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Today's Meals
-            </Text>
-            {todayMeals.length === 0 ? (
-                <View style={[styles.emptyState, { backgroundColor: theme.colors.surfaceVariant }]}>
-                    <Ionicons name="restaurant-outline" size={48} color={theme.colors.textSecondary} />
-                    <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                        No meals logged today
-                    </Text>
-                    <Text style={[styles.emptySubtext, { color: theme.colors.textSecondary }]}>
-                        Tap the button above to log your first meal
-                    </Text>
+                    {/* Progress Bar */}
+                    <View style={[styles.progressBarBg, { backgroundColor: theme.colors.border + '40' }]}>
+                        <LinearGradient
+                            colors={gradients.calories}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={[
+                                styles.progressBarFill,
+                                { width: `${Math.min(progress * 100, 100)}%` },
+                            ]}
+                        />
+                    </View>
+
+                    <View style={styles.progressLabels}>
+                        <Text style={[styles.progressLabel, { color: theme.colors.textSecondary }]}>
+                            {Math.round(progress * 100)}% of daily goal
+                        </Text>
+                        {remaining > 0 ? (
+                            <Text style={[styles.remainingLabel, { color: theme.colors.success }]}>
+                                {remaining} remaining
+                            </Text>
+                        ) : (
+                            <Text style={[styles.remainingLabel, { color: theme.colors.error }]}>
+                                {Math.abs(goal - totalCalories)} over
+                            </Text>
+                        )}
+                    </View>
+                </GlassCard>
+
+                {/* Meal Type Breakdown */}
+                <View style={styles.breakdownRow}>
+                    {['breakfast', 'lunch', 'dinner', 'snack'].map((type) => {
+                        const typeMeals = todayMeals.filter(m => m.mealType === type);
+                        const typeCalories = typeMeals.reduce((sum, m) => sum + m.calories, 0);
+                        return (
+                            <GlassCard
+                                key={type}
+                                style={styles.breakdownItem}
+                                variant="card"
+                                noPadding
+                            >
+                                <View style={styles.breakdownContent}>
+                                    <Text style={[styles.breakdownType, { color: theme.colors.textSecondary }]}>
+                                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                                    </Text>
+                                    <Text style={[styles.breakdownValue, { color: theme.colors.text }]}>
+                                        {typeCalories}
+                                    </Text>
+                                </View>
+                            </GlassCard>
+                        );
+                    })}
                 </View>
-            ) : (
-                todayMeals.slice().reverse().map((meal) => (
-                    <MealCard
-                        key={meal.id}
-                        meal={meal}
-                        onDelete={handleDeleteMeal}
-                    />
-                ))
-            )}
 
-            {/* Modal */}
-            <AddMealModal
-                visible={showModal}
-                onClose={() => setShowModal(false)}
-                onSave={handleAddMeal}
-            />
-        </ScrollView>
+                {/* Add Meal Button */}
+                <TouchableOpacity
+                    style={[styles.addButton, shadows.glow(theme.colors.primary)]}
+                    onPress={() => setShowModal(true)}
+                >
+                    <LinearGradient
+                        colors={gradients.primary}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <Ionicons name="add-circle" size={24} color="#000000" />
+                    <Text style={styles.addButtonText}>Log Meal</Text>
+                </TouchableOpacity>
+
+                {/* Today's Meals List */}
+                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                    Today's Meals
+                </Text>
+                {todayMeals.length === 0 ? (
+                    <GlassCard style={styles.emptyState} variant="card">
+                        <Ionicons name="restaurant-outline" size={48} color={theme.colors.textSecondary} />
+                        <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                            No meals logged today
+                        </Text>
+                        <Text style={[styles.emptySubtext, { color: theme.colors.textSecondary }]}>
+                            Tap the button above to log your first meal
+                        </Text>
+                    </GlassCard>
+                ) : (
+                    todayMeals.slice().reverse().map((meal) => (
+                        <MealCard
+                            key={meal.id}
+                            meal={meal}
+                            onDelete={handleDeleteMeal}
+                        />
+                    ))
+                )}
+
+                {/* Modal */}
+                <AddMealModal
+                    visible={showModal}
+                    onClose={() => setShowModal(false)}
+                    onSave={handleAddMeal}
+                />
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+    },
     container: {
         flex: 1,
     },
     content: {
         padding: spacing.md,
-        paddingBottom: 120,
+        paddingTop: 100,
+        paddingBottom: 140,
+    },
+    // Decorative gradient orbs
+    gradientOrb: {
+        position: 'absolute',
+        borderRadius: 200,
+        opacity: 0.15,
+    },
+    orbPrimary: {
+        width: 300,
+        height: 300,
+        top: -100,
+        right: -100,
+    },
+    orbSecondary: {
+        width: 250,
+        height: 250,
+        bottom: 200,
+        left: -100,
+    },
+    orbAccent: {
+        width: 200,
+        height: 200,
+        bottom: -50,
+        right: -50,
     },
     overviewCard: {
-        padding: spacing.lg,
-        borderRadius: borderRadius.lg,
         marginBottom: spacing.md,
     },
     overviewHeader: {
@@ -272,10 +325,10 @@ const styles = StyleSheet.create({
     },
     breakdownItem: {
         flex: 1,
+    },
+    breakdownContent: {
         alignItems: 'center',
         padding: spacing.sm,
-        borderRadius: borderRadius.sm,
-        borderWidth: 1,
     },
     breakdownType: {
         ...typography.caption,
@@ -289,13 +342,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: spacing.md,
-        borderRadius: borderRadius.md,
+        borderRadius: borderRadius.lg,
         marginBottom: spacing.lg,
         gap: spacing.sm,
+        overflow: 'hidden',
     },
     addButtonText: {
         ...typography.button,
-        color: '#FFFFFF',
+        color: '#000000',
     },
     sectionTitle: {
         ...typography.h3,
@@ -303,8 +357,7 @@ const styles = StyleSheet.create({
     },
     emptyState: {
         alignItems: 'center',
-        padding: spacing.xl,
-        borderRadius: borderRadius.lg,
+        paddingVertical: spacing.xl,
     },
     emptyText: {
         ...typography.body,

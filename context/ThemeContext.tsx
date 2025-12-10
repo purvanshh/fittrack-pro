@@ -1,10 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { darkTheme, lightTheme } from '../constants/theme';
-import { STORAGE_KEYS, Theme, ThemeMode } from '../types';
+import React, { createContext, ReactNode, useContext } from 'react';
+import { darkTheme } from '../constants/theme';
+import { Theme, ThemeMode } from '../types';
 
 // ============================================
-// FitTrack Pro - Theme Context
+// FitTrack Pro - Theme Context (Dark Theme Only)
 // ============================================
 
 interface ThemeContextType {
@@ -21,39 +20,13 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-    const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
+    // Always use dark theme
+    const themeMode: ThemeMode = 'dark';
+    const theme = darkTheme;
 
-    // Load saved theme on mount
-    useEffect(() => {
-        loadSavedTheme();
-    }, []);
-
-    const loadSavedTheme = async () => {
-        try {
-            const savedTheme = await AsyncStorage.getItem(STORAGE_KEYS.THEME);
-            if (savedTheme === 'dark' || savedTheme === 'light') {
-                setThemeModeState(savedTheme);
-            }
-        } catch (error) {
-            console.error('Error loading theme:', error);
-        }
-    };
-
-    const setThemeMode = async (mode: ThemeMode) => {
-        try {
-            await AsyncStorage.setItem(STORAGE_KEYS.THEME, mode);
-            setThemeModeState(mode);
-        } catch (error) {
-            console.error('Error saving theme:', error);
-        }
-    };
-
-    const toggleTheme = () => {
-        const newMode = themeMode === 'light' ? 'dark' : 'light';
-        setThemeMode(newMode);
-    };
-
-    const theme = themeMode === 'light' ? lightTheme : darkTheme;
+    // These functions are kept for API compatibility but do nothing
+    const toggleTheme = () => { };
+    const setThemeMode = () => { };
 
     return (
         <ThemeContext.Provider value={{ theme, themeMode, toggleTheme, setThemeMode }}>
@@ -69,3 +42,4 @@ export function useTheme(): ThemeContextType {
     }
     return context;
 }
+

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
@@ -9,8 +10,9 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import GlassCard from '../../components/GlassCard';
 import WaterBottle from '../../components/WaterBottle';
-import { borderRadius, shadows, spacing, typography } from '../../constants/theme';
+import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
 import { UserProfile, WATER_PRESETS, WaterIntake } from '../../types';
 import { formatWater, generateId, getCurrentTime, getToday } from '../../utils/dateUtils';
@@ -23,6 +25,7 @@ import {
 
 export default function WaterScreen() {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const [todayIntakes, setTodayIntakes] = useState<WaterIntake[]>([]);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [refreshing, setRefreshing] = useState(false);
@@ -67,135 +70,202 @@ export default function WaterScreen() {
     const goal = profile?.goals.dailyWater || 2500;
     const remaining = Math.max(goal - totalWater, 0);
 
+    const glassStyle = isDark ? glassStyles.dark : glassStyles.light;
+
     return (
-        <ScrollView
-            style={[styles.container, { backgroundColor: theme.colors.background }]}
-            contentContainerStyle={styles.content}
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-        >
-            {/* Water Bottle Visualization */}
-            <View style={[styles.bottleSection, { backgroundColor: theme.colors.surface }, shadows.md]}>
-                <WaterBottle current={totalWater} goal={goal} size={200} />
-            </View>
+        <View style={styles.wrapper}>
+            {/* Gradient Background */}
+            <LinearGradient
+                colors={isDark ? gradients.darkBackground : gradients.lightBackground}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+            />
 
-            {/* Remaining */}
-            {remaining > 0 && (
-                <View style={[styles.remainingCard, { backgroundColor: theme.colors.water + '15' }]}>
-                    <Ionicons name="water" size={20} color={theme.colors.water} />
-                    <Text style={[styles.remainingText, { color: theme.colors.text }]}>
-                        {formatWater(remaining)} remaining to reach your goal
-                    </Text>
-                </View>
-            )}
+            {/* Decorative Gradient Orbs */}
+            <View style={[styles.gradientOrb, styles.orbPrimary, { backgroundColor: theme.colors.primary }]} />
+            <View style={[styles.gradientOrb, styles.orbSecondary, { backgroundColor: theme.colors.secondary }]} />
+            <View style={[styles.gradientOrb, styles.orbAccent, { backgroundColor: theme.colors.accent }]} />
 
-            {/* Quick Add Buttons */}
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Quick Add
-            </Text>
-            <View style={styles.presetGrid}>
-                {WATER_PRESETS.map((amount) => (
-                    <TouchableOpacity
-                        key={amount}
-                        style={[
-                            styles.presetButton,
-                            { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
-                            shadows.sm,
-                        ]}
-                        onPress={() => handleAddWater(amount)}
-                    >
-                        <Ionicons name="water" size={24} color={theme.colors.water} />
-                        <Text style={[styles.presetAmount, { color: theme.colors.text }]}>
-                            {formatWater(amount)}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
-
-            {/* Custom Amount */}
-            <TouchableOpacity
-                style={[
-                    styles.customButton,
-                    { backgroundColor: theme.colors.water },
-                    shadows.md,
-                ]}
-                onPress={() => handleAddWater(500)}
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.content}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.water} />
+                }
             >
-                <Ionicons name="add-circle" size={24} color="#FFFFFF" />
-                <Text style={styles.customButtonText}>Add Custom Amount</Text>
-            </TouchableOpacity>
+                {/* Water Bottle Visualization */}
+                <GlassCard style={styles.bottleSection} variant="surface">
+                    <WaterBottle current={totalWater} goal={goal} size={200} />
+                </GlassCard>
 
-            {/* Today's Intake History */}
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Today's Intake
-            </Text>
-            {todayIntakes.length === 0 ? (
-                <View style={[styles.emptyState, { backgroundColor: theme.colors.surfaceVariant }]}>
-                    <Ionicons name="water-outline" size={48} color={theme.colors.textSecondary} />
-                    <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                        No water logged yet today
-                    </Text>
-                    <Text style={[styles.emptySubtext, { color: theme.colors.textSecondary }]}>
-                        Tap the buttons above to log your water intake
-                    </Text>
-                </View>
-            ) : (
-                <View style={styles.intakeList}>
-                    {todayIntakes.slice().reverse().map((intake) => (
-                        <View
-                            key={intake.id}
-                            style={[
-                                styles.intakeItem,
-                                { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
-                            ]}
-                        >
-                            <View style={[styles.intakeIcon, { backgroundColor: theme.colors.water + '15' }]}>
-                                <Ionicons name="water" size={18} color={theme.colors.water} />
+                {/* Remaining */}
+                {remaining > 0 && (
+                    <GlassCard style={styles.remainingCard} variant="subtle">
+                        <View style={styles.remainingContent}>
+                            <View style={[styles.remainingIcon, { backgroundColor: theme.colors.water + '20' }]}>
+                                <Ionicons name="water" size={20} color={theme.colors.water} />
                             </View>
-                            <View style={styles.intakeInfo}>
-                                <Text style={[styles.intakeAmount, { color: theme.colors.text }]}>
-                                    {formatWater(intake.amount)}
-                                </Text>
-                                <Text style={[styles.intakeTime, { color: theme.colors.textSecondary }]}>
-                                    {intake.time}
-                                </Text>
-                            </View>
-                            <TouchableOpacity
-                                onPress={() => handleDeleteIntake(intake.id)}
-                                style={styles.deleteButton}
-                            >
-                                <Ionicons name="close-circle" size={22} color={theme.colors.error} />
-                            </TouchableOpacity>
+                            <Text style={[styles.remainingText, { color: theme.colors.text }]}>
+                                {formatWater(remaining)} remaining to reach your goal
+                            </Text>
                         </View>
+                    </GlassCard>
+                )}
+
+                {/* Quick Add Buttons */}
+                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                    Quick Add
+                </Text>
+                <View style={styles.presetGrid}>
+                    {WATER_PRESETS.map((amount) => (
+                        <TouchableOpacity
+                            key={amount}
+                            style={[styles.presetButton, glassStyle.card, shadows.glass]}
+                            onPress={() => handleAddWater(amount)}
+                            activeOpacity={0.7}
+                        >
+                            <LinearGradient
+                                colors={isDark
+                                    ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'] as const
+                                    : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.3)'] as const
+                                }
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={StyleSheet.absoluteFill}
+                            />
+                            <View style={[styles.presetIcon, { backgroundColor: theme.colors.water + '20' }]}>
+                                <Ionicons name="water" size={24} color={theme.colors.water} />
+                            </View>
+                            <Text style={[styles.presetAmount, { color: theme.colors.text }]}>
+                                {formatWater(amount)}
+                            </Text>
+                        </TouchableOpacity>
                     ))}
                 </View>
-            )}
-        </ScrollView>
+
+                {/* Custom Amount Button */}
+                <TouchableOpacity
+                    style={[styles.customButton, shadows.glow(theme.colors.water)]}
+                    onPress={() => handleAddWater(500)}
+                    activeOpacity={0.8}
+                >
+                    <LinearGradient
+                        colors={gradients.water}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <Ionicons name="add-circle" size={24} color="#FFFFFF" />
+                    <Text style={styles.customButtonText}>Add Custom Amount</Text>
+                </TouchableOpacity>
+
+                {/* Today's Intake History */}
+                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                    Today's Intake
+                </Text>
+                {todayIntakes.length === 0 ? (
+                    <GlassCard style={styles.emptyState} variant="card">
+                        <Ionicons name="water-outline" size={48} color={theme.colors.textSecondary} />
+                        <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                            No water logged yet today
+                        </Text>
+                        <Text style={[styles.emptySubtext, { color: theme.colors.textSecondary }]}>
+                            Tap the buttons above to log your water intake
+                        </Text>
+                    </GlassCard>
+                ) : (
+                    <View style={styles.intakeList}>
+                        {todayIntakes.slice().reverse().map((intake) => (
+                            <GlassCard
+                                key={intake.id}
+                                style={styles.intakeItem}
+                                variant="card"
+                                noPadding
+                            >
+                                <View style={styles.intakeItemContent}>
+                                    <View style={[styles.intakeIcon, { backgroundColor: theme.colors.water + '15' }]}>
+                                        <Ionicons name="water" size={18} color={theme.colors.water} />
+                                    </View>
+                                    <View style={styles.intakeInfo}>
+                                        <Text style={[styles.intakeAmount, { color: theme.colors.text }]}>
+                                            {formatWater(intake.amount)}
+                                        </Text>
+                                        <Text style={[styles.intakeTime, { color: theme.colors.textSecondary }]}>
+                                            {intake.time}
+                                        </Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={() => handleDeleteIntake(intake.id)}
+                                        style={styles.deleteButton}
+                                    >
+                                        <Ionicons name="close-circle" size={22} color={theme.colors.error} />
+                                    </TouchableOpacity>
+                                </View>
+                            </GlassCard>
+                        ))}
+                    </View>
+                )}
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+    },
     container: {
         flex: 1,
     },
     content: {
         padding: spacing.md,
-        paddingBottom: 120,
+        paddingTop: 100,
+        paddingBottom: 140,
+    },
+    // Decorative gradient orbs
+    gradientOrb: {
+        position: 'absolute',
+        borderRadius: 200,
+        opacity: 0.15,
+    },
+    orbPrimary: {
+        width: 300,
+        height: 300,
+        top: -100,
+        right: -100,
+    },
+    orbSecondary: {
+        width: 250,
+        height: 250,
+        bottom: 200,
+        left: -100,
+    },
+    orbAccent: {
+        width: 200,
+        height: 200,
+        bottom: -50,
+        right: -50,
     },
     bottleSection: {
         alignItems: 'center',
-        padding: spacing.lg,
-        borderRadius: borderRadius.lg,
+        paddingVertical: spacing.lg,
         marginBottom: spacing.md,
     },
     remainingCard: {
+        marginBottom: spacing.lg,
+    },
+    remainingContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.md,
-        borderRadius: borderRadius.md,
-        marginBottom: spacing.lg,
         gap: spacing.sm,
+    },
+    remainingIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     remainingText: {
         ...typography.body,
@@ -216,9 +286,16 @@ const styles = StyleSheet.create({
         minWidth: '45%',
         alignItems: 'center',
         padding: spacing.lg,
-        borderRadius: borderRadius.md,
-        borderWidth: 1,
-        gap: spacing.xs,
+        borderRadius: borderRadius.lg,
+        gap: spacing.sm,
+        overflow: 'hidden',
+    },
+    presetIcon: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     presetAmount: {
         ...typography.h3,
@@ -228,9 +305,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: spacing.md,
-        borderRadius: borderRadius.md,
+        borderRadius: borderRadius.lg,
         marginBottom: spacing.lg,
         gap: spacing.sm,
+        overflow: 'hidden',
     },
     customButtonText: {
         ...typography.button,
@@ -238,8 +316,7 @@ const styles = StyleSheet.create({
     },
     emptyState: {
         alignItems: 'center',
-        padding: spacing.xl,
-        borderRadius: borderRadius.lg,
+        paddingVertical: spacing.xl,
     },
     emptyText: {
         ...typography.body,
@@ -254,11 +331,12 @@ const styles = StyleSheet.create({
         gap: spacing.sm,
     },
     intakeItem: {
+        marginBottom: 0,
+    },
+    intakeItemContent: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: spacing.md,
-        borderRadius: borderRadius.md,
-        borderWidth: 1,
     },
     intakeIcon: {
         width: 36,
@@ -282,3 +360,4 @@ const styles = StyleSheet.create({
         padding: spacing.xs,
     },
 });
+
