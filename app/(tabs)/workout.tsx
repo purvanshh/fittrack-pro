@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
@@ -10,8 +11,9 @@ import {
     View
 } from 'react-native';
 import AddWorkoutModal from '../../components/AddWorkoutModal';
+import GlassCard from '../../components/GlassCard';
 import WorkoutCard from '../../components/WorkoutCard';
-import { borderRadius, shadows, spacing, typography } from '../../constants/theme';
+import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
 import { Workout, WORKOUT_TYPES, WorkoutType } from '../../types';
 import { formatDuration } from '../../utils/dateUtils';
@@ -25,12 +27,15 @@ import {
 
 export default function WorkoutScreen() {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const [todayWorkouts, setTodayWorkouts] = useState<Workout[]>([]);
     const [weeklyMinutes, setWeeklyMinutes] = useState(0);
     const [weeklyCount, setWeeklyCount] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [recentTypes, setRecentTypes] = useState<WorkoutType[]>([]);
+
+    const glassStyle = isDark ? glassStyles.dark : glassStyles.light;
 
     const loadData = async () => {
         const [today, weeklyStats, allWorkouts] = await Promise.all([
@@ -82,155 +87,223 @@ export default function WorkoutScreen() {
     const todayCalories = todayWorkouts.reduce((sum, w) => sum + w.calories, 0);
 
     return (
-        <ScrollView
-            style={[styles.container, { backgroundColor: theme.colors.background }]}
-            contentContainerStyle={styles.content}
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-        >
-            {/* Weekly Summary */}
-            <View style={[styles.summaryCard, { backgroundColor: theme.colors.workout }, shadows.md]}>
-                <Text style={styles.summaryTitle}>This Week</Text>
-                <View style={styles.summaryStats}>
-                    <View style={styles.summaryStat}>
-                        <Text style={styles.summaryValue}>{weeklyCount}</Text>
-                        <Text style={styles.summaryLabel}>Workouts</Text>
-                    </View>
-                    <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.3)' }]} />
-                    <View style={styles.summaryStat}>
-                        <Text style={styles.summaryValue}>{formatDuration(weeklyMinutes)}</Text>
-                        <Text style={styles.summaryLabel}>Total Time</Text>
-                    </View>
-                </View>
-            </View>
-
-            {/* Smart Suggestions */}
-            {recentTypes.length > 0 && (
-                <>
-                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                        Quick Start
-                    </Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.suggestionsScroll}>
-                        <View style={styles.suggestions}>
-                            {recentTypes.map((type) => {
-                                const info = WORKOUT_TYPES[type];
-                                return (
-                                    <TouchableOpacity
-                                        key={type}
-                                        style={[
-                                            styles.suggestionChip,
-                                            { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
-                                            shadows.sm,
-                                        ]}
-                                        onPress={() => setShowModal(true)}
-                                    >
-                                        <Ionicons name={info.icon as any} size={18} color={theme.colors.workout} />
-                                        <Text style={[styles.suggestionText, { color: theme.colors.text }]}>
-                                            {info.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-                    </ScrollView>
-                </>
-            )}
-
-            {/* Today's Stats */}
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                Today
-            </Text>
-            <View style={styles.todayStats}>
-                <View style={[styles.todayStat, { backgroundColor: theme.colors.surface }, shadows.sm]}>
-                    <Ionicons name="fitness-outline" size={24} color={theme.colors.workout} />
-                    <Text style={[styles.todayValue, { color: theme.colors.text }]}>
-                        {todayWorkouts.length}
-                    </Text>
-                    <Text style={[styles.todayLabel, { color: theme.colors.textSecondary }]}>
-                        Workouts
-                    </Text>
-                </View>
-                <View style={[styles.todayStat, { backgroundColor: theme.colors.surface }, shadows.sm]}>
-                    <Ionicons name="time-outline" size={24} color={theme.colors.primary} />
-                    <Text style={[styles.todayValue, { color: theme.colors.text }]}>
-                        {formatDuration(todayMinutes)}
-                    </Text>
-                    <Text style={[styles.todayLabel, { color: theme.colors.textSecondary }]}>
-                        Duration
-                    </Text>
-                </View>
-                <View style={[styles.todayStat, { backgroundColor: theme.colors.surface }, shadows.sm]}>
-                    <Ionicons name="flame-outline" size={24} color={theme.colors.calories} />
-                    <Text style={[styles.todayValue, { color: theme.colors.text }]}>
-                        {todayCalories}
-                    </Text>
-                    <Text style={[styles.todayLabel, { color: theme.colors.textSecondary }]}>
-                        Calories
-                    </Text>
-                </View>
-            </View>
-
-            {/* Today's Workouts List */}
-            <View style={styles.listHeader}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.text, marginBottom: 0 }]}>
-                    Workout Log
-                </Text>
-                <TouchableOpacity
-                    style={[styles.addButton, { backgroundColor: theme.colors.primary }]}
-                    onPress={() => setShowModal(true)}
-                >
-                    <Ionicons name="add" size={20} color="#FFFFFF" />
-                    <Text style={styles.addButtonText}>Log</Text>
-                </TouchableOpacity>
-            </View>
-
-            {todayWorkouts.length === 0 ? (
-                <View style={[styles.emptyState, { backgroundColor: theme.colors.surfaceVariant }]}>
-                    <Ionicons name="barbell-outline" size={48} color={theme.colors.textSecondary} />
-                    <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-                        No workouts logged today
-                    </Text>
-                    <Text style={[styles.emptySubtext, { color: theme.colors.textSecondary }]}>
-                        Tap the button above to log your first workout
-                    </Text>
-                </View>
-            ) : (
-                todayWorkouts.map((workout) => (
-                    <WorkoutCard
-                        key={workout.id}
-                        workout={workout}
-                        onDelete={handleDeleteWorkout}
-                    />
-                ))
-            )}
-
-            {/* Modal */}
-            <AddWorkoutModal
-                visible={showModal}
-                onClose={() => setShowModal(false)}
-                onSave={handleAddWorkout}
+        <View style={styles.wrapper}>
+            {/* Gradient Background */}
+            <LinearGradient
+                colors={isDark ? gradients.darkBackground : gradients.lightBackground}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
             />
-        </ScrollView>
+
+            {/* Decorative Gradient Orbs */}
+            <View style={[styles.gradientOrb, styles.orbPrimary, { backgroundColor: theme.colors.primary }]} />
+            <View style={[styles.gradientOrb, styles.orbSecondary, { backgroundColor: theme.colors.secondary }]} />
+            <View style={[styles.gradientOrb, styles.orbAccent, { backgroundColor: theme.colors.accent }]} />
+
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.content}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.workout} />
+                }
+            >
+                {/* Weekly Summary */}
+                <View style={[styles.summaryCard, shadows.glow(theme.colors.workout)]}>
+                    <LinearGradient
+                        colors={gradients.workout}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <Text style={styles.summaryTitle}>This Week</Text>
+                    <View style={styles.summaryStats}>
+                        <View style={styles.summaryStat}>
+                            <Text style={styles.summaryValue}>{weeklyCount}</Text>
+                            <Text style={styles.summaryLabel}>Workouts</Text>
+                        </View>
+                        <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.3)' }]} />
+                        <View style={styles.summaryStat}>
+                            <Text style={styles.summaryValue}>{formatDuration(weeklyMinutes)}</Text>
+                            <Text style={styles.summaryLabel}>Total Time</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Smart Suggestions */}
+                {recentTypes.length > 0 && (
+                    <>
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                            Quick Start
+                        </Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.suggestionsScroll}>
+                            <View style={styles.suggestions}>
+                                {recentTypes.map((type) => {
+                                    const info = WORKOUT_TYPES[type];
+                                    return (
+                                        <TouchableOpacity
+                                            key={type}
+                                            style={[
+                                                styles.suggestionChip,
+                                                glassStyle.card,
+                                                shadows.glass,
+                                            ]}
+                                            onPress={() => setShowModal(true)}
+                                        >
+                                            <Ionicons name={info.icon as any} size={18} color={theme.colors.workout} />
+                                            <Text style={[styles.suggestionText, { color: theme.colors.text }]}>
+                                                {info.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </ScrollView>
+                    </>
+                )}
+
+                {/* Today's Stats */}
+                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                    Today
+                </Text>
+                <View style={styles.todayStats}>
+                    <GlassCard style={styles.todayStat} variant="card" noPadding>
+                        <View style={styles.todayStatContent}>
+                            <View style={[styles.todayStatIcon, { backgroundColor: theme.colors.workout + '20' }]}>
+                                <Ionicons name="fitness-outline" size={22} color={theme.colors.workout} />
+                            </View>
+                            <Text style={[styles.todayValue, { color: theme.colors.text }]}>
+                                {todayWorkouts.length}
+                            </Text>
+                            <Text style={[styles.todayLabel, { color: theme.colors.textSecondary }]}>
+                                Workouts
+                            </Text>
+                        </View>
+                    </GlassCard>
+                    <GlassCard style={styles.todayStat} variant="card" noPadding>
+                        <View style={styles.todayStatContent}>
+                            <View style={[styles.todayStatIcon, { backgroundColor: theme.colors.primary + '20' }]}>
+                                <Ionicons name="time-outline" size={22} color={theme.colors.primary} />
+                            </View>
+                            <Text style={[styles.todayValue, { color: theme.colors.text }]}>
+                                {formatDuration(todayMinutes)}
+                            </Text>
+                            <Text style={[styles.todayLabel, { color: theme.colors.textSecondary }]}>
+                                Duration
+                            </Text>
+                        </View>
+                    </GlassCard>
+                    <GlassCard style={styles.todayStat} variant="card" noPadding>
+                        <View style={styles.todayStatContent}>
+                            <View style={[styles.todayStatIcon, { backgroundColor: theme.colors.calories + '20' }]}>
+                                <Ionicons name="flame-outline" size={22} color={theme.colors.calories} />
+                            </View>
+                            <Text style={[styles.todayValue, { color: theme.colors.text }]}>
+                                {todayCalories}
+                            </Text>
+                            <Text style={[styles.todayLabel, { color: theme.colors.textSecondary }]}>
+                                Calories
+                            </Text>
+                        </View>
+                    </GlassCard>
+                </View>
+
+                {/* Today's Workouts List */}
+                <View style={styles.listHeader}>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text, marginBottom: 0 }]}>
+                        Workout Log
+                    </Text>
+                    <TouchableOpacity
+                        style={[styles.addButton, shadows.glow(theme.colors.primary)]}
+                        onPress={() => setShowModal(true)}
+                    >
+                        <LinearGradient
+                            colors={gradients.primary}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFill}
+                        />
+                        <Ionicons name="add" size={20} color="#000000" />
+                        <Text style={styles.addButtonText}>Log</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {todayWorkouts.length === 0 ? (
+                    <GlassCard style={styles.emptyState} variant="card">
+                        <Ionicons name="barbell-outline" size={48} color={theme.colors.textSecondary} />
+                        <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                            No workouts logged today
+                        </Text>
+                        <Text style={[styles.emptySubtext, { color: theme.colors.textSecondary }]}>
+                            Tap the button above to log your first workout
+                        </Text>
+                    </GlassCard>
+                ) : (
+                    todayWorkouts.map((workout) => (
+                        <WorkoutCard
+                            key={workout.id}
+                            workout={workout}
+                            onDelete={handleDeleteWorkout}
+                        />
+                    ))
+                )}
+
+                {/* Modal */}
+                <AddWorkoutModal
+                    visible={showModal}
+                    onClose={() => setShowModal(false)}
+                    onSave={handleAddWorkout}
+                />
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+    },
     container: {
         flex: 1,
     },
     content: {
         padding: spacing.md,
-        paddingBottom: 120,
+        paddingTop: 100,
+        paddingBottom: 140,
+    },
+    // Decorative gradient orbs
+    gradientOrb: {
+        position: 'absolute',
+        borderRadius: 200,
+        opacity: 0.15,
+    },
+    orbPrimary: {
+        width: 300,
+        height: 300,
+        top: -100,
+        right: -100,
+    },
+    orbSecondary: {
+        width: 250,
+        height: 250,
+        bottom: 200,
+        left: -100,
+    },
+    orbAccent: {
+        width: 200,
+        height: 200,
+        bottom: -50,
+        right: -50,
     },
     summaryCard: {
         padding: spacing.lg,
         borderRadius: borderRadius.lg,
         marginBottom: spacing.lg,
+        overflow: 'hidden',
     },
     summaryTitle: {
         ...typography.bodySmall,
-        color: 'rgba(255,255,255,0.8)',
+        color: 'rgba(255,255,255,0.9)',
         textAlign: 'center',
         marginBottom: spacing.md,
     },
@@ -248,7 +321,7 @@ const styles = StyleSheet.create({
     },
     summaryLabel: {
         ...typography.caption,
-        color: 'rgba(255,255,255,0.8)',
+        color: 'rgba(255,255,255,0.85)',
     },
     divider: {
         width: 1,
@@ -272,7 +345,6 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.md,
         borderRadius: borderRadius.full,
-        borderWidth: 1,
         gap: spacing.xs,
     },
     suggestionText: {
@@ -286,10 +358,19 @@ const styles = StyleSheet.create({
     },
     todayStat: {
         flex: 1,
+    },
+    todayStatContent: {
         alignItems: 'center',
         padding: spacing.md,
-        borderRadius: borderRadius.md,
         gap: spacing.xs,
+    },
+    todayStatIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: spacing.xs,
     },
     todayValue: {
         ...typography.h3,
@@ -310,16 +391,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: spacing.md,
         borderRadius: borderRadius.full,
         gap: spacing.xs,
+        overflow: 'hidden',
     },
     addButtonText: {
         ...typography.bodySmall,
-        color: '#FFFFFF',
+        color: '#000000',
         fontWeight: '600',
     },
     emptyState: {
         alignItems: 'center',
-        padding: spacing.xl,
-        borderRadius: borderRadius.lg,
+        paddingVertical: spacing.xl,
     },
     emptyText: {
         ...typography.body,

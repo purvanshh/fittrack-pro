@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
-import { borderRadius, shadows, spacing, typography } from '../constants/theme';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { borderRadius, glassStyles, shadows, spacing, typography } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
 
 interface QuickActionButtonProps {
@@ -20,28 +21,40 @@ export default function QuickActionButton({
     style,
 }: QuickActionButtonProps) {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const buttonColor = color || theme.colors.primary;
+    const glassStyle = isDark ? glassStyles.dark.card : glassStyles.light.card;
 
     return (
         <TouchableOpacity
             style={[
                 styles.container,
-                {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.border,
-                },
-                shadows.md,
+                glassStyle,
+                shadows.glass,
                 style,
             ]}
             onPress={onPress}
             activeOpacity={0.7}
         >
-            <Ionicons
-                name={icon}
-                size={28}
-                color={buttonColor}
-                style={styles.icon}
+            {/* Glass gradient overlay */}
+            <LinearGradient
+                colors={isDark
+                    ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'] as const
+                    : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.3)'] as const
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
             />
+
+            {/* Icon container with background */}
+            <View style={[styles.iconContainer, { backgroundColor: buttonColor + '20' }]}>
+                <Ionicons
+                    name={icon}
+                    size={26}
+                    color={buttonColor}
+                />
+            </View>
             <Text style={[styles.label, { color: theme.colors.text }]}>
                 {label}
             </Text>
@@ -55,15 +68,21 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         padding: spacing.md,
         borderRadius: borderRadius.lg,
-        borderWidth: 1,
         minWidth: 100,
+        overflow: 'hidden',
     },
-    icon: {
-        marginBottom: spacing.xs,
+    iconContainer: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: spacing.sm,
     },
     label: {
         ...typography.bodySmall,
-        fontWeight: '500',
+        fontWeight: '600',
         textAlign: 'center',
     },
 });
+

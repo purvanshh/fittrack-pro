@@ -1,22 +1,29 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
-import { borderRadius, spacing } from '../../constants/theme';
+import { Platform, StyleSheet, View } from 'react-native';
+import { borderRadius, glassStyles, shadows, spacing } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function TabLayout() {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
+
+    // Glass tab bar styles
+    const tabBarGlassStyle = isDark
+        ? glassStyles.dark.surface
+        : glassStyles.light.surface;
 
     return (
         <Tabs
             screenOptions={{
                 headerShown: true,
                 headerStyle: {
-                    backgroundColor: theme.colors.background,
+                    backgroundColor: 'transparent',
                     elevation: 0,
                     shadowOpacity: 0,
                     borderBottomWidth: 0,
                 },
+                headerTransparent: true,
                 headerTitleStyle: {
                     color: theme.colors.text,
                     fontSize: 18,
@@ -28,17 +35,19 @@ export default function TabLayout() {
                     bottom: spacing.lg,
                     left: spacing.lg,
                     right: spacing.lg,
-                    backgroundColor: theme.colors.surface,
+                    ...tabBarGlassStyle,
                     borderRadius: borderRadius.full,
-                    height: 70,
+                    height: 72,
                     paddingBottom: 0,
                     paddingTop: 0,
                     borderTopWidth: 0,
-                    elevation: 8,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 16,
+                    ...shadows.glass,
+                    // Additional glass effect
+                    ...(Platform.OS === 'ios' ? {
+                        backgroundColor: isDark
+                            ? 'rgba(20, 20, 30, 0.85)'
+                            : 'rgba(255, 255, 255, 0.75)',
+                    } : {}),
                 },
                 tabBarItemStyle: {
                     paddingVertical: spacing.sm,
@@ -59,12 +68,15 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <View style={[
                             styles.iconContainer,
-                            focused && [styles.activeIcon, { backgroundColor: theme.colors.primary + '20' }]
+                            focused && [
+                                styles.activeIcon,
+                                { backgroundColor: theme.colors.primary + '25' },
+                            ]
                         ]}>
                             <Ionicons
                                 name={focused ? 'home' : 'home-outline'}
                                 size={24}
-                                color={color}
+                                color={focused ? theme.colors.primary : color}
                             />
                         </View>
                     ),
@@ -77,7 +89,10 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <View style={[
                             styles.iconContainer,
-                            focused && [styles.activeIcon, { backgroundColor: theme.colors.workout + '20' }]
+                            focused && [
+                                styles.activeIcon,
+                                { backgroundColor: theme.colors.workout + '25' },
+                            ]
                         ]}>
                             <Ionicons
                                 name={focused ? 'barbell' : 'barbell-outline'}
@@ -95,7 +110,10 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <View style={[
                             styles.iconContainer,
-                            focused && [styles.activeIcon, { backgroundColor: theme.colors.water + '20' }]
+                            focused && [
+                                styles.activeIcon,
+                                { backgroundColor: theme.colors.water + '25' },
+                            ]
                         ]}>
                             <Ionicons
                                 name={focused ? 'water' : 'water-outline'}
@@ -113,7 +131,10 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <View style={[
                             styles.iconContainer,
-                            focused && [styles.activeIcon, { backgroundColor: theme.colors.calories + '20' }]
+                            focused && [
+                                styles.activeIcon,
+                                { backgroundColor: theme.colors.calories + '25' },
+                            ]
                         ]}>
                             <Ionicons
                                 name={focused ? 'restaurant' : 'restaurant-outline'}
@@ -131,7 +152,10 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <View style={[
                             styles.iconContainer,
-                            focused && [styles.activeIcon, { backgroundColor: theme.colors.secondary + '20' }]
+                            focused && [
+                                styles.activeIcon,
+                                { backgroundColor: theme.colors.secondary + '25' },
+                            ]
                         ]}>
                             <Ionicons
                                 name={focused ? 'person' : 'person-outline'}
@@ -148,13 +172,14 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
     iconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
     },
     activeIcon: {
-        transform: [{ scale: 1.1 }],
+        transform: [{ scale: 1.05 }],
     },
 });
+

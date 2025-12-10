@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, spacing, typography } from '../constants/theme';
+import { borderRadius, glassStyles, shadows, spacing, typography } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
 
 interface CalendarWeekProps {
@@ -20,7 +21,9 @@ export default function CalendarWeek({
     activeDays = []
 }: CalendarWeekProps) {
     const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const today = new Date().toISOString().split('T')[0];
+    const glassStyle = isDark ? glassStyles.dark : glassStyles.light;
 
     // Get current week dates based on the reference date
     const getWeekDates = () => {
@@ -67,7 +70,18 @@ export default function CalendarWeek({
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+        <View style={[styles.container, glassStyle.surface, shadows.glass]}>
+            {/* Glass gradient overlay */}
+            <LinearGradient
+                colors={isDark
+                    ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'] as const
+                    : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.3)'] as const
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+            />
+
             {/* Month Header */}
             <View style={styles.header}>
                 <Text style={[styles.monthText, { color: theme.colors.text }]}>
@@ -75,13 +89,13 @@ export default function CalendarWeek({
                 </Text>
                 <View style={styles.navButtons}>
                     <TouchableOpacity
-                        style={[styles.navButton, { backgroundColor: theme.colors.surfaceVariant }]}
+                        style={[styles.navButton, glassStyle.subtle]}
                         onPress={goToPreviousWeek}
                     >
                         <Ionicons name="chevron-back" size={18} color={theme.colors.text} />
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.navButton, { backgroundColor: theme.colors.surfaceVariant }]}
+                        style={[styles.navButton, glassStyle.subtle]}
                         onPress={goToNextWeek}
                     >
                         <Ionicons name="chevron-forward" size={18} color={theme.colors.text} />
@@ -96,11 +110,19 @@ export default function CalendarWeek({
                         key={day.date}
                         style={[
                             styles.dayContainer,
-                            day.isSelected && [styles.selectedContainer, { backgroundColor: theme.colors.primary }],
+                            day.isSelected && [styles.selectedContainer, shadows.glow(theme.colors.primary)],
                             day.isToday && !day.isSelected && [styles.todayBorder, { borderColor: theme.colors.primary }],
                         ]}
                         onPress={() => onDateSelect?.(day.date)}
                     >
+                        {day.isSelected && (
+                            <LinearGradient
+                                colors={[theme.colors.primary, `${theme.colors.primary}DD`] as const}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={[StyleSheet.absoluteFill, { borderRadius: borderRadius.lg }]}
+                            />
+                        )}
                         <Text
                             style={[
                                 styles.dayName,
@@ -133,6 +155,7 @@ const styles = StyleSheet.create({
         borderRadius: borderRadius.lg,
         padding: spacing.md,
         marginBottom: spacing.md,
+        overflow: 'hidden',
     },
     header: {
         flexDirection: 'row',
@@ -148,9 +171,9 @@ const styles = StyleSheet.create({
         gap: spacing.xs,
     },
     navButton: {
-        width: 36,
-        height: 36,
-        borderRadius: borderRadius.full,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -163,22 +186,26 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.sm,
         borderRadius: borderRadius.lg,
-        minWidth: 40,
+        minWidth: 42,
+        overflow: 'hidden',
     },
     selectedContainer: {
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.sm,
+        borderWidth: 0, // Explicitly remove border when selected
     },
     todayBorder: {
         borderWidth: 2,
+        borderStyle: 'solid',
     },
     dayName: {
         ...typography.caption,
         marginBottom: spacing.xs,
+        fontWeight: '500',
     },
     dayNumber: {
         ...typography.body,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     activityDot: {
         width: 6,
@@ -187,3 +214,4 @@ const styles = StyleSheet.create({
         marginTop: spacing.xs,
     },
 });
+

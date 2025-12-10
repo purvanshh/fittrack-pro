@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
@@ -13,14 +14,16 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { borderRadius, spacing, typography } from '../../constants/theme';
+import GlassCard from '../../components/GlassCard';
+import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { DEFAULT_PROFILE, UserProfile } from '../../types';
+import { AVATAR_PRESETS, DEFAULT_PROFILE, UserProfile } from '../../types';
 import { cancelAllNotifications, updateNotificationSchedules } from '../../utils/notifications';
 import { clearAllData, getProfile, saveProfile } from '../../utils/storage';
 
 export default function ProfileScreen() {
-    const { theme, themeMode, toggleTheme } = useTheme();
+    const { theme } = useTheme();
+    const isDark = theme.mode === 'dark';
     const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
     const [editedProfile, setEditedProfile] = useState<UserProfile>(DEFAULT_PROFILE);
     const [refreshing, setRefreshing] = useState(false);
@@ -106,350 +109,456 @@ export default function ProfileScreen() {
     };
 
     const currentProfile = isEditing ? editedProfile : profile;
+    const currentAvatar = AVATAR_PRESETS.find(a => a.id === currentProfile.avatar) || AVATAR_PRESETS[6]; // Default to star
+    const glassStyle = isDark ? glassStyles.dark : glassStyles.light;
 
     return (
-        <ScrollView
-            style={[styles.container, { backgroundColor: theme.colors.background }]}
-            contentContainerStyle={styles.content}
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            keyboardShouldPersistTaps="handled"
-        >
-            {/* Profile Header */}
-            <View style={[styles.profileHeader, { backgroundColor: theme.colors.primary }]}>
-                <View style={[styles.avatar, { backgroundColor: 'rgba(0,0,0,0.2)' }]}>
-                    <Text style={styles.avatarText}>
-                        {currentProfile.name ? currentProfile.name[0].toUpperCase() : 'U'}
-                    </Text>
-                </View>
-                <Text style={styles.headerName}>
-                    {currentProfile.name || 'Your Name'}
-                </Text>
-                <View style={styles.streakInfo}>
-                    <Ionicons name="flame" size={16} color="rgba(0,0,0,0.6)" />
-                    <Text style={styles.streakText}>
-                        {profile.streak} day streak
-                    </Text>
-                </View>
-            </View>
+        <View style={styles.wrapper}>
+            {/* Gradient Background */}
+            <LinearGradient
+                colors={isDark ? gradients.darkBackground : gradients.lightBackground}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+            />
 
-            {/* Edit/Save Buttons */}
-            <View style={styles.buttonRow}>
-                {isEditing ? (
-                    <>
-                        <TouchableOpacity
-                            style={[styles.actionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-                            onPress={handleCancel}
-                        >
-                            <Ionicons name="close" size={20} color={theme.colors.textSecondary} />
-                            <Text style={[styles.actionButtonText, { color: theme.colors.textSecondary }]}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.actionButton, { backgroundColor: theme.colors.success }]}
-                            onPress={handleSave}
-                        >
-                            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                            <Text style={[styles.actionButtonText, { color: '#FFFFFF' }]}>Save Changes</Text>
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    <TouchableOpacity
-                        style={[styles.actionButton, styles.editButton, { backgroundColor: theme.colors.primary }]}
-                        onPress={handleEdit}
-                    >
-                        <Ionicons name="pencil" size={20} color="#000000" />
-                        <Text style={[styles.actionButtonText, { color: '#000000' }]}>Edit Profile & Goals</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
+            {/* Decorative Gradient Orbs */}
+            <View style={[styles.gradientOrb, styles.orbPrimary, { backgroundColor: theme.colors.primary }]} />
+            <View style={[styles.gradientOrb, styles.orbSecondary, { backgroundColor: theme.colors.secondary }]} />
+            <View style={[styles.gradientOrb, styles.orbAccent, { backgroundColor: theme.colors.accent }]} />
 
-            {/* Daily Goals */}
-            <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                    Daily Goals
-                </Text>
-
-                {/* Water Goal */}
-                <View style={[styles.goalCard, { backgroundColor: theme.colors.water + '20' }]}>
-                    <View style={[styles.goalIcon, { backgroundColor: theme.colors.water + '30' }]}>
-                        <Ionicons name="water" size={24} color={theme.colors.water} />
-                    </View>
-                    <View style={styles.goalContent}>
-                        <Text style={[styles.goalLabel, { color: theme.colors.textSecondary }]}>
-                            Daily Water Goal
-                        </Text>
-                        {isEditing ? (
-                            <View style={styles.goalInputRow}>
-                                <TextInput
-                                    style={[styles.goalInput, { color: theme.colors.text, backgroundColor: theme.colors.background }]}
-                                    keyboardType="number-pad"
-                                    value={editedProfile.goals.dailyWater.toString()}
-                                    onChangeText={(text) => {
-                                        const value = parseInt(text) || 0;
-                                        setEditedProfile({
-                                            ...editedProfile,
-                                            goals: { ...editedProfile.goals, dailyWater: value },
-                                        });
-                                    }}
-                                />
-                                <Text style={[styles.goalUnit, { color: theme.colors.textSecondary }]}>ml</Text>
-                            </View>
-                        ) : (
-                            <Text style={[styles.goalValue, { color: theme.colors.text }]}>
-                                {profile.goals.dailyWater} ml
-                            </Text>
-                        )}
-                    </View>
-                </View>
-
-                {/* Calorie Goal */}
-                <View style={[styles.goalCard, { backgroundColor: theme.colors.calories + '20' }]}>
-                    <View style={[styles.goalIcon, { backgroundColor: theme.colors.calories + '30' }]}>
-                        <Ionicons name="flame" size={24} color={theme.colors.calories} />
-                    </View>
-                    <View style={styles.goalContent}>
-                        <Text style={[styles.goalLabel, { color: theme.colors.textSecondary }]}>
-                            Daily Calorie Goal
-                        </Text>
-                        {isEditing ? (
-                            <View style={styles.goalInputRow}>
-                                <TextInput
-                                    style={[styles.goalInput, { color: theme.colors.text, backgroundColor: theme.colors.background }]}
-                                    keyboardType="number-pad"
-                                    value={editedProfile.goals.dailyCalories.toString()}
-                                    onChangeText={(text) => {
-                                        const value = parseInt(text) || 0;
-                                        setEditedProfile({
-                                            ...editedProfile,
-                                            goals: { ...editedProfile.goals, dailyCalories: value },
-                                        });
-                                    }}
-                                />
-                                <Text style={[styles.goalUnit, { color: theme.colors.textSecondary }]}>kcal</Text>
-                            </View>
-                        ) : (
-                            <Text style={[styles.goalValue, { color: theme.colors.text }]}>
-                                {profile.goals.dailyCalories} kcal
-                            </Text>
-                        )}
-                    </View>
-                </View>
-
-                {/* Workout Goal */}
-                <View style={[styles.goalCard, { backgroundColor: theme.colors.workout + '20' }]}>
-                    <View style={[styles.goalIcon, { backgroundColor: theme.colors.workout + '30' }]}>
-                        <Ionicons name="barbell" size={24} color={theme.colors.workout} />
-                    </View>
-                    <View style={styles.goalContent}>
-                        <Text style={[styles.goalLabel, { color: theme.colors.textSecondary }]}>
-                            Weekly Workouts Goal
-                        </Text>
-                        {isEditing ? (
-                            <View style={styles.goalInputRow}>
-                                <TextInput
-                                    style={[styles.goalInput, { color: theme.colors.text, backgroundColor: theme.colors.background }]}
-                                    keyboardType="number-pad"
-                                    value={editedProfile.goals.weeklyWorkouts.toString()}
-                                    onChangeText={(text) => {
-                                        const value = parseInt(text) || 0;
-                                        setEditedProfile({
-                                            ...editedProfile,
-                                            goals: { ...editedProfile.goals, weeklyWorkouts: value },
-                                        });
-                                    }}
-                                />
-                                <Text style={[styles.goalUnit, { color: theme.colors.textSecondary }]}>per week</Text>
-                            </View>
-                        ) : (
-                            <Text style={[styles.goalValue, { color: theme.colors.text }]}>
-                                {profile.goals.weeklyWorkouts} per week
-                            </Text>
-                        )}
-                    </View>
-                </View>
-            </View>
-
-            {/* Personal Details */}
-            <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                    Personal Details
-                </Text>
-
-                {/* Name */}
-                <View style={styles.detailRow}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Name</Text>
-                    {isEditing ? (
-                        <TextInput
-                            style={[styles.detailInput, { color: theme.colors.text, backgroundColor: theme.colors.background }]}
-                            placeholder="Your Name"
-                            placeholderTextColor={theme.colors.textSecondary}
-                            value={editedProfile.name}
-                            onChangeText={(text) => setEditedProfile({ ...editedProfile, name: text })}
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.content}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+                }
+                keyboardShouldPersistTaps="handled"
+            >
+                {/* Profile Header */}
+                <GlassCard style={styles.profileHeader} variant="surface">
+                    <View style={[styles.avatar, shadows.glow(theme.colors.primary)]}>
+                        <LinearGradient
+                            colors={gradients.primary}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFill}
                         />
-                    ) : (
-                        <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                            {profile.name || 'Not set'}
-                        </Text>
-                    )}
-                </View>
-
-                {/* Weight */}
-                <View style={styles.detailRow}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Weight</Text>
-                    {isEditing ? (
-                        <View style={styles.detailInputRow}>
-                            <TextInput
-                                style={[styles.detailInputSmall, { color: theme.colors.text, backgroundColor: theme.colors.background }]}
-                                placeholder="70"
-                                placeholderTextColor={theme.colors.textSecondary}
-                                keyboardType="number-pad"
-                                value={editedProfile.weight?.toString() || ''}
-                                onChangeText={(text) => setEditedProfile({ ...editedProfile, weight: parseInt(text) || undefined })}
-                            />
-                            <Text style={[styles.detailUnit, { color: theme.colors.textSecondary }]}>kg</Text>
-                        </View>
-                    ) : (
-                        <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                            {profile.weight ? `${profile.weight} kg` : 'Not set'}
-                        </Text>
-                    )}
-                </View>
-
-                {/* Height */}
-                <View style={styles.detailRow}>
-                    <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Height</Text>
-                    {isEditing ? (
-                        <View style={styles.detailInputRow}>
-                            <TextInput
-                                style={[styles.detailInputSmall, { color: theme.colors.text, backgroundColor: theme.colors.background }]}
-                                placeholder="175"
-                                placeholderTextColor={theme.colors.textSecondary}
-                                keyboardType="number-pad"
-                                value={editedProfile.height?.toString() || ''}
-                                onChangeText={(text) => setEditedProfile({ ...editedProfile, height: parseInt(text) || undefined })}
-                            />
-                            <Text style={[styles.detailUnit, { color: theme.colors.textSecondary }]}>cm</Text>
-                        </View>
-                    ) : (
-                        <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-                            {profile.height ? `${profile.height} cm` : 'Not set'}
-                        </Text>
-                    )}
-                </View>
-            </View>
-
-            {/* Preferences */}
-            <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-                    Preferences
-                </Text>
-
-                <View style={styles.toggleRow}>
-                    <View style={styles.toggleInfo}>
-                        <View style={[styles.toggleIcon, { backgroundColor: theme.colors.primary + '20' }]}>
-                            <Ionicons name={themeMode === 'dark' ? 'moon' : 'sunny'} size={20} color={theme.colors.primary} />
-                        </View>
-                        <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Dark Mode</Text>
+                        <Text style={styles.avatarEmoji}>{currentAvatar.emoji}</Text>
                     </View>
-                    <Switch
-                        value={themeMode === 'dark'}
-                        onValueChange={toggleTheme}
-                        trackColor={{ false: theme.colors.border, true: theme.colors.primary + '50' }}
-                        thumbColor={themeMode === 'dark' ? theme.colors.primary : theme.colors.surfaceVariant}
-                    />
-                </View>
-
-                <View style={styles.toggleRow}>
-                    <View style={styles.toggleInfo}>
-                        <View style={[styles.toggleIcon, { backgroundColor: theme.colors.water + '20' }]}>
-                            <Ionicons name="water" size={20} color={theme.colors.water} />
-                        </View>
-                        <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Water Reminders</Text>
-                    </View>
-                    <Switch
-                        value={profile.notifications.waterReminders}
-                        onValueChange={handleToggleWaterReminders}
-                        trackColor={{ false: theme.colors.border, true: theme.colors.water + '50' }}
-                        thumbColor={profile.notifications.waterReminders ? theme.colors.water : theme.colors.surfaceVariant}
-                    />
-                </View>
-
-                <View style={styles.toggleRow}>
-                    <View style={styles.toggleInfo}>
-                        <View style={[styles.toggleIcon, { backgroundColor: theme.colors.workout + '20' }]}>
-                            <Ionicons name="barbell" size={20} color={theme.colors.workout} />
-                        </View>
-                        <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Workout Reminders</Text>
-                    </View>
-                    <Switch
-                        value={profile.notifications.workoutReminders}
-                        onValueChange={handleToggleWorkoutReminders}
-                        trackColor={{ false: theme.colors.border, true: theme.colors.workout + '50' }}
-                        thumbColor={profile.notifications.workoutReminders ? theme.colors.workout : theme.colors.surfaceVariant}
-                    />
-                </View>
-            </View>
-
-            {/* Danger Zone */}
-            <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.error }]}>
-                    Danger Zone
-                </Text>
-                <TouchableOpacity
-                    style={[styles.dangerButton, { borderColor: theme.colors.error }]}
-                    onPress={handleClearData}
-                >
-                    <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
-                    <Text style={[styles.dangerButtonText, { color: theme.colors.error }]}>
-                        Clear All Data
+                    <Text style={[styles.headerName, { color: theme.colors.text }]}>
+                        {currentProfile.name || 'Your Name'}
                     </Text>
-                </TouchableOpacity>
-            </View>
-        </ScrollView>
+                    <View style={[styles.streakBadge, { backgroundColor: theme.colors.primary + '20' }]}>
+                        <Ionicons name="flame" size={16} color={theme.colors.primary} />
+                        <Text style={[styles.streakText, { color: theme.colors.primary }]}>
+                            {profile.streak} day streak
+                        </Text>
+                    </View>
+                </GlassCard>
+
+                {/* Avatar Selection (Edit Mode) */}
+                {isEditing && (
+                    <GlassCard style={styles.section} variant="card">
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                            Choose Avatar
+                        </Text>
+                        <View style={styles.avatarGrid}>
+                            {AVATAR_PRESETS.map((preset) => (
+                                <TouchableOpacity
+                                    key={preset.id}
+                                    style={[
+                                        styles.avatarOption,
+                                        glassStyle.subtle,
+                                        editedProfile.avatar === preset.id && [
+                                            styles.avatarOptionSelected,
+                                            { borderColor: theme.colors.primary },
+                                            shadows.glow(theme.colors.primary),
+                                        ],
+                                    ]}
+                                    onPress={() => setEditedProfile({ ...editedProfile, avatar: preset.id })}
+                                >
+                                    {editedProfile.avatar === preset.id && (
+                                        <LinearGradient
+                                            colors={[theme.colors.primary + '30', theme.colors.primary + '10']}
+                                            style={StyleSheet.absoluteFill}
+                                        />
+                                    )}
+                                    <Text style={styles.avatarOptionEmoji}>{preset.emoji}</Text>
+                                    <Text style={[styles.avatarOptionLabel, { color: theme.colors.textSecondary }]}>
+                                        {preset.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </GlassCard>
+                )}
+
+                {/* Edit/Save Buttons */}
+                <View style={styles.buttonRow}>
+                    {isEditing ? (
+                        <>
+                            <TouchableOpacity
+                                style={[styles.actionButton, glassStyle.card, shadows.glass]}
+                                onPress={handleCancel}
+                            >
+                                <Ionicons name="close" size={20} color={theme.colors.textSecondary} />
+                                <Text style={[styles.actionButtonText, { color: theme.colors.textSecondary }]}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[
+                                    styles.actionButton,
+                                    styles.saveButton,
+                                    { backgroundColor: theme.colors.success }
+                                ]}
+                                onPress={handleSave}
+                            >
+                                <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                                <Text style={[styles.actionButtonText, { color: '#FFFFFF' }]}>Save</Text>
+                            </TouchableOpacity>
+                        </>
+                    ) : (
+                        <TouchableOpacity
+                            style={[
+                                styles.actionButton,
+                                styles.editButton,
+                                styles.primaryButton,
+                                { backgroundColor: theme.colors.primary }
+                            ]}
+                            onPress={handleEdit}
+                        >
+                            <Ionicons name="pencil" size={20} color="#000000" />
+                            <Text style={[styles.actionButtonText, { color: '#000000' }]}>Edit Profile & Goals</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+
+                {/* Daily Goals */}
+                <GlassCard style={styles.section} variant="card">
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                        Daily Goals
+                    </Text>
+
+                    {/* Water Goal */}
+                    <View style={[styles.goalCard, { backgroundColor: theme.colors.water + '15' }]}>
+                        <View style={[styles.goalIcon, { backgroundColor: theme.colors.water + '25' }]}>
+                            <Ionicons name="water" size={24} color={theme.colors.water} />
+                        </View>
+                        <View style={styles.goalContent}>
+                            <Text style={[styles.goalLabel, { color: theme.colors.textSecondary }]}>
+                                Daily Water Goal
+                            </Text>
+                            {isEditing ? (
+                                <View style={styles.goalInputRow}>
+                                    <TextInput
+                                        style={[styles.goalInput, { color: theme.colors.text, backgroundColor: theme.colors.background + '80' }]}
+                                        keyboardType="number-pad"
+                                        value={editedProfile.goals.dailyWater.toString()}
+                                        onChangeText={(text) => {
+                                            const value = parseInt(text) || 0;
+                                            setEditedProfile({
+                                                ...editedProfile,
+                                                goals: { ...editedProfile.goals, dailyWater: value },
+                                            });
+                                        }}
+                                    />
+                                    <Text style={[styles.goalUnit, { color: theme.colors.textSecondary }]}>ml</Text>
+                                </View>
+                            ) : (
+                                <Text style={[styles.goalValue, { color: theme.colors.text }]}>
+                                    {profile.goals.dailyWater} ml
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Calorie Goal */}
+                    <View style={[styles.goalCard, { backgroundColor: theme.colors.calories + '15' }]}>
+                        <View style={[styles.goalIcon, { backgroundColor: theme.colors.calories + '25' }]}>
+                            <Ionicons name="flame" size={24} color={theme.colors.calories} />
+                        </View>
+                        <View style={styles.goalContent}>
+                            <Text style={[styles.goalLabel, { color: theme.colors.textSecondary }]}>
+                                Daily Calorie Goal
+                            </Text>
+                            {isEditing ? (
+                                <View style={styles.goalInputRow}>
+                                    <TextInput
+                                        style={[styles.goalInput, { color: theme.colors.text, backgroundColor: theme.colors.background + '80' }]}
+                                        keyboardType="number-pad"
+                                        value={editedProfile.goals.dailyCalories.toString()}
+                                        onChangeText={(text) => {
+                                            const value = parseInt(text) || 0;
+                                            setEditedProfile({
+                                                ...editedProfile,
+                                                goals: { ...editedProfile.goals, dailyCalories: value },
+                                            });
+                                        }}
+                                    />
+                                    <Text style={[styles.goalUnit, { color: theme.colors.textSecondary }]}>kcal</Text>
+                                </View>
+                            ) : (
+                                <Text style={[styles.goalValue, { color: theme.colors.text }]}>
+                                    {profile.goals.dailyCalories} kcal
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Workout Goal */}
+                    <View style={[styles.goalCard, { backgroundColor: theme.colors.workout + '15' }]}>
+                        <View style={[styles.goalIcon, { backgroundColor: theme.colors.workout + '25' }]}>
+                            <Ionicons name="barbell" size={24} color={theme.colors.workout} />
+                        </View>
+                        <View style={styles.goalContent}>
+                            <Text style={[styles.goalLabel, { color: theme.colors.textSecondary }]}>
+                                Weekly Workouts Goal
+                            </Text>
+                            {isEditing ? (
+                                <View style={styles.goalInputRow}>
+                                    <TextInput
+                                        style={[styles.goalInput, { color: theme.colors.text, backgroundColor: theme.colors.background + '80' }]}
+                                        keyboardType="number-pad"
+                                        value={editedProfile.goals.weeklyWorkouts.toString()}
+                                        onChangeText={(text) => {
+                                            const value = parseInt(text) || 0;
+                                            setEditedProfile({
+                                                ...editedProfile,
+                                                goals: { ...editedProfile.goals, weeklyWorkouts: value },
+                                            });
+                                        }}
+                                    />
+                                    <Text style={[styles.goalUnit, { color: theme.colors.textSecondary }]}>per week</Text>
+                                </View>
+                            ) : (
+                                <Text style={[styles.goalValue, { color: theme.colors.text }]}>
+                                    {profile.goals.weeklyWorkouts} per week
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+                </GlassCard>
+
+                {/* Personal Details */}
+                <GlassCard style={styles.section} variant="card">
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                        Personal Details
+                    </Text>
+
+                    {/* Name */}
+                    <View style={[styles.detailRow, { borderBottomColor: theme.colors.border + '30' }]}>
+                        <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Name</Text>
+                        {isEditing ? (
+                            <TextInput
+                                style={[styles.detailInput, { color: theme.colors.text, backgroundColor: theme.colors.background + '80' }]}
+                                placeholder="Your Name"
+                                placeholderTextColor={theme.colors.textSecondary}
+                                value={editedProfile.name}
+                                onChangeText={(text) => setEditedProfile({ ...editedProfile, name: text })}
+                            />
+                        ) : (
+                            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                                {profile.name || 'Not set'}
+                            </Text>
+                        )}
+                    </View>
+
+                    {/* Weight */}
+                    <View style={[styles.detailRow, { borderBottomColor: theme.colors.border + '30' }]}>
+                        <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Weight</Text>
+                        {isEditing ? (
+                            <View style={styles.detailInputRow}>
+                                <TextInput
+                                    style={[styles.detailInputSmall, { color: theme.colors.text, backgroundColor: theme.colors.background + '80' }]}
+                                    placeholder="70"
+                                    placeholderTextColor={theme.colors.textSecondary}
+                                    keyboardType="number-pad"
+                                    value={editedProfile.weight?.toString() || ''}
+                                    onChangeText={(text) => setEditedProfile({ ...editedProfile, weight: parseInt(text) || undefined })}
+                                />
+                                <Text style={[styles.detailUnit, { color: theme.colors.textSecondary }]}>kg</Text>
+                            </View>
+                        ) : (
+                            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                                {profile.weight ? `${profile.weight} kg` : 'Not set'}
+                            </Text>
+                        )}
+                    </View>
+
+                    {/* Height */}
+                    <View style={[styles.detailRow, { borderBottomColor: 'transparent' }]}>
+                        <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Height</Text>
+                        {isEditing ? (
+                            <View style={styles.detailInputRow}>
+                                <TextInput
+                                    style={[styles.detailInputSmall, { color: theme.colors.text, backgroundColor: theme.colors.background + '80' }]}
+                                    placeholder="175"
+                                    placeholderTextColor={theme.colors.textSecondary}
+                                    keyboardType="number-pad"
+                                    value={editedProfile.height?.toString() || ''}
+                                    onChangeText={(text) => setEditedProfile({ ...editedProfile, height: parseInt(text) || undefined })}
+                                />
+                                <Text style={[styles.detailUnit, { color: theme.colors.textSecondary }]}>cm</Text>
+                            </View>
+                        ) : (
+                            <Text style={[styles.detailValue, { color: theme.colors.text }]}>
+                                {profile.height ? `${profile.height} cm` : 'Not set'}
+                            </Text>
+                        )}
+                    </View>
+                </GlassCard>
+
+                {/* Preferences */}
+                <GlassCard style={styles.section} variant="card">
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                        Notifications
+                    </Text>
+
+                    <View style={styles.toggleRow}>
+                        <View style={styles.toggleInfo}>
+                            <View style={[styles.toggleIcon, { backgroundColor: theme.colors.water + '20' }]}>
+                                <Ionicons name="water" size={20} color={theme.colors.water} />
+                            </View>
+                            <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Water Reminders</Text>
+                        </View>
+                        <Switch
+                            value={profile.notifications.waterReminders}
+                            onValueChange={handleToggleWaterReminders}
+                            trackColor={{ false: theme.colors.border, true: theme.colors.water + '50' }}
+                            thumbColor={profile.notifications.waterReminders ? theme.colors.water : theme.colors.surfaceVariant}
+                        />
+                    </View>
+
+                    <View style={styles.toggleRow}>
+                        <View style={styles.toggleInfo}>
+                            <View style={[styles.toggleIcon, { backgroundColor: theme.colors.workout + '20' }]}>
+                                <Ionicons name="barbell" size={20} color={theme.colors.workout} />
+                            </View>
+                            <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Workout Reminders</Text>
+                        </View>
+                        <Switch
+                            value={profile.notifications.workoutReminders}
+                            onValueChange={handleToggleWorkoutReminders}
+                            trackColor={{ false: theme.colors.border, true: theme.colors.workout + '50' }}
+                            thumbColor={profile.notifications.workoutReminders ? theme.colors.workout : theme.colors.surfaceVariant}
+                        />
+                    </View>
+                </GlassCard>
+
+                {/* Danger Zone */}
+                <GlassCard style={styles.section} variant="card">
+                    <Text style={[styles.sectionTitle, { color: theme.colors.error }]}>
+                        Danger Zone
+                    </Text>
+                    <TouchableOpacity
+                        style={[styles.dangerButton, { borderColor: theme.colors.error }]}
+                        onPress={handleClearData}
+                    >
+                        <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
+                        <Text style={[styles.dangerButtonText, { color: theme.colors.error }]}>
+                            Clear All Data
+                        </Text>
+                    </TouchableOpacity>
+                </GlassCard>
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+    },
     container: {
         flex: 1,
     },
     content: {
-        paddingBottom: 120,
+        paddingTop: 100,
+        paddingBottom: 140,
+    },
+    // Decorative gradient orbs
+    gradientOrb: {
+        position: 'absolute',
+        borderRadius: 200,
+        opacity: 0.15,
+    },
+    orbPrimary: {
+        width: 300,
+        height: 300,
+        top: -100,
+        right: -100,
+    },
+    orbSecondary: {
+        width: 250,
+        height: 250,
+        bottom: 200,
+        left: -100,
+    },
+    orbAccent: {
+        width: 200,
+        height: 200,
+        bottom: -50,
+        right: -50,
     },
     profileHeader: {
         alignItems: 'center',
-        paddingTop: spacing.xl,
-        paddingBottom: spacing.xl,
-        paddingHorizontal: spacing.lg,
+        marginHorizontal: spacing.md,
+        paddingVertical: spacing.xl,
     },
     avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 100,
+        height: 100,
+        borderRadius: 50,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: spacing.md,
+        overflow: 'hidden',
     },
-    avatarText: {
-        fontSize: 32,
-        fontWeight: '700',
-        color: '#000000',
+    avatarEmoji: {
+        fontSize: 48,
     },
     headerName: {
         ...typography.h2,
-        color: '#000000',
         marginBottom: spacing.sm,
     },
-    streakInfo: {
+    streakBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.xs,
+        borderRadius: borderRadius.full,
+        gap: spacing.xs,
     },
     streakText: {
         ...typography.bodySmall,
         fontWeight: '600',
-        color: 'rgba(0,0,0,0.6)',
+    },
+    avatarGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: spacing.sm,
+        justifyContent: 'center',
+    },
+    avatarOption: {
+        width: 72,
+        height: 80,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: borderRadius.lg,
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: 'transparent',
+    },
+    avatarOptionSelected: {
+        borderWidth: 2,
+    },
+    avatarOptionEmoji: {
+        fontSize: 28,
+        marginBottom: 2,
+    },
+    avatarOptionLabel: {
+        ...typography.caption,
+        fontSize: 10,
     },
     buttonRow: {
         flexDirection: 'row',
@@ -465,19 +574,36 @@ const styles = StyleSheet.create({
         padding: spacing.md,
         borderRadius: borderRadius.lg,
         gap: spacing.sm,
-        borderWidth: 1,
-        borderColor: 'transparent',
     },
     editButton: {
         flex: 1,
     },
+    saveButton: {
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    primaryButton: {
+        shadowColor: '#00D4AA',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 3,
+    },
     actionButtonText: {
         ...typography.button,
     },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: spacing.sm,
+        zIndex: 1,
+    },
     section: {
         marginHorizontal: spacing.md,
-        padding: spacing.lg,
-        borderRadius: borderRadius.xl,
         marginBottom: spacing.md,
     },
     sectionTitle: {
@@ -532,7 +658,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: spacing.sm,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(128,128,128,0.1)',
     },
     detailLabel: {
         ...typography.body,
