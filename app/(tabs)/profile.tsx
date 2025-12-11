@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import GlassCard from '../../components/GlassCard';
 import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { AVATAR_PRESETS, DEFAULT_PROFILE, UserProfile } from '../../types';
 import { cancelAllNotifications, updateNotificationSchedules } from '../../utils/notifications';
@@ -23,6 +24,7 @@ import { clearAllData, getProfile, saveProfile } from '../../utils/storage';
 
 export default function ProfileScreen() {
     const { theme } = useTheme();
+    const { signOut, user } = useAuth();
     const isDark = theme.mode === 'dark';
     const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
     const [editedProfile, setEditedProfile] = useState<UserProfile>(DEFAULT_PROFILE);
@@ -108,6 +110,23 @@ export default function ProfileScreen() {
         );
     };
 
+    const handleSignOut = () => {
+        Alert.alert(
+            'Sign Out',
+            'Are you sure you want to sign out?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Sign Out',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await signOut();
+                    },
+                },
+            ]
+        );
+    };
+
     const currentProfile = isEditing ? editedProfile : profile;
     const currentAvatar = AVATAR_PRESETS.find(a => a.id === currentProfile.avatar) || AVATAR_PRESETS[6]; // Default to star
     const glassStyle = isDark ? glassStyles.dark : glassStyles.light;
@@ -149,6 +168,11 @@ export default function ProfileScreen() {
                     <Text style={[styles.headerName, { color: theme.colors.text }]}>
                         {currentProfile.name || 'Your Name'}
                     </Text>
+                    {user?.email && (
+                        <Text style={[styles.headerEmail, { color: theme.colors.textSecondary }]}>
+                            {user.email}
+                        </Text>
+                    )}
                     <View style={[styles.streakBadge, { backgroundColor: theme.colors.primary + '20' }]}>
                         <Ionicons name="flame" size={16} color={theme.colors.primary} />
                         <Text style={[styles.streakText, { color: theme.colors.primary }]}>
@@ -460,6 +484,19 @@ export default function ProfileScreen() {
                         </Text>
                     </TouchableOpacity>
                 </GlassCard>
+
+                {/* Sign Out */}
+                <GlassCard style={styles.section} variant="card">
+                    <TouchableOpacity
+                        style={[styles.signOutButton, glassStyle.card]}
+                        onPress={handleSignOut}
+                    >
+                        <Ionicons name="log-out-outline" size={22} color={theme.colors.textSecondary} />
+                        <Text style={[styles.signOutButtonText, { color: theme.colors.textSecondary }]}>
+                            Sign Out
+                        </Text>
+                    </TouchableOpacity>
+                </GlassCard>
             </ScrollView>
         </View>
     );
@@ -519,6 +556,10 @@ const styles = StyleSheet.create({
     },
     headerName: {
         ...typography.h2,
+        marginBottom: spacing.xs,
+    },
+    headerEmail: {
+        ...typography.bodySmall,
         marginBottom: spacing.sm,
     },
     streakBadge: {
@@ -723,6 +764,17 @@ const styles = StyleSheet.create({
         gap: spacing.sm,
     },
     dangerButtonText: {
+        ...typography.button,
+    },
+    signOutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: spacing.md,
+        borderRadius: borderRadius.lg,
+        gap: spacing.sm,
+    },
+    signOutButtonText: {
         ...typography.button,
     },
 });

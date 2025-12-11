@@ -10,6 +10,13 @@ A comprehensive fitness tracking mobile application built with React Native and 
 
 ## ✨ Features
 
+### 🔐 Authentication
+- **Email/Password Sign-In** - Secure authentication powered by Supabase
+- **User Accounts** - Create account, sign in, sign out
+- **Session Persistence** - Stay logged in across app restarts
+- **Per-User Data** - Each user has their own private fitness data
+- **Glass-Themed Login** - Beautiful login screen with smooth animations
+
 ### 🏠 Dashboard
 - **Personalized Greeting** - Welcome message with your name
 - **Goals Overview Card** - Quick view of daily water, calorie, and workout goals with tap-to-edit
@@ -100,7 +107,8 @@ A comprehensive fitness tracking mobile application built with React Native and 
 - **Platform:** Expo SDK 54
 - **Language:** TypeScript 5.9
 - **Navigation:** Expo Router 6.0
-- **Storage:** @react-native-async-storage/async-storage
+- **Authentication:** Supabase Auth
+- **Storage:** @react-native-async-storage/async-storage (per-user isolated)
 - **Charts:** react-native-chart-kit
 - **Icons:** @expo/vector-icons (Ionicons)
 - **Notifications:** expo-notifications (requires development build)
@@ -117,26 +125,31 @@ fittrack-pro/
 │   │   ├── workout.tsx      # Workout Tracker
 │   │   ├── water.tsx        # Water Tracker
 │   │   ├── meals.tsx        # Meal Tracker
-│   │   └── profile.tsx      # Profile & Settings
+│   │   └── profile.tsx      # Profile & Settings (+ Sign Out)
+│   ├── login.tsx            # Login/Sign-up screen
 │   ├── weekly-report.tsx    # Weekly Analytics
-│   └── _layout.tsx          # Root layout
+│   └── _layout.tsx          # Root layout with auth routing
 ├── components/              # Reusable UI components
+│   ├── GlassCard.tsx        # Glassmorphism card component
 │   ├── ProgressRing.tsx     # Circular progress indicator
 │   ├── WaterBottle.tsx      # Animated water visualization
 │   ├── WorkoutCard.tsx      # Workout entry card
 │   ├── MealCard.tsx         # Meal entry card
-│   ├── StatCard.tsx         # Statistics card
-│   ├── QuickActionButton.tsx
-│   ├── AddWorkoutModal.tsx
-│   └── AddMealModal.tsx
+│   └── ...more
 ├── constants/               # Theme and styling
 │   └── theme.ts
 ├── context/                 # React Context
-│   └── ThemeContext.tsx
+│   ├── ThemeContext.tsx     # Theme state
+│   └── AuthContext.tsx      # Authentication state
+├── src/supabase/            # Supabase integration
+│   ├── supabaseClient.ts    # Supabase client setup
+│   └── auth.ts              # Auth helper functions
 ├── utils/                   # Utility functions
-│   ├── storage.ts           # AsyncStorage helpers
+│   ├── storage.ts           # Per-user AsyncStorage helpers
 │   ├── dateUtils.ts         # Date formatting & calculations
 │   └── notifications.ts     # Notification scheduling
+├── .env                     # Environment variables (gitignored)
+├── .env.example             # Environment template
 └── types.ts                 # TypeScript type definitions
 ```
 
@@ -177,11 +190,15 @@ To enable notifications in a development build:
 
 ## 💾 Data Persistence
 
-All data is stored locally using AsyncStorage:
-- ✅ Workouts, meals, and water intake persist across app restarts
-- ✅ Goals and preferences are saved to your profile
-- ✅ Historical data available for weekly analytics
-- ✅ Streak counter tracks consecutive active days
+All data is stored locally using AsyncStorage with per-user isolation:
+- ✅ **User Accounts** - Each user has completely separate data
+- ✅ **Session Persistence** - Stay logged in across app restarts
+- ✅ **Workouts, meals, and water** - Persist per user account
+- ✅ **Goals and preferences** - Saved to your profile
+- ✅ **Historical data** - Available for weekly analytics
+- ✅ **Streak counter** - Tracks consecutive active days
+
+> 📖 See [README_SUPABASE.md](./README_SUPABASE.md) for authentication setup details.
 
 ---
 
