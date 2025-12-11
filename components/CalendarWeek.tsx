@@ -10,6 +10,7 @@ interface CalendarWeekProps {
     selectedDate: string; // YYYY-MM-DD - the currently selected date
     onDateSelect?: (date: string) => void;
     onWeekChange?: (newDate: string) => void; // Navigate to previous/next week
+    onMonthPress?: () => void; // Open monthly view
     activeDays?: string[]; // Array of dates that have activity
 }
 
@@ -18,6 +19,7 @@ export default function CalendarWeek({
     selectedDate,
     onDateSelect,
     onWeekChange,
+    onMonthPress,
     activeDays = []
 }: CalendarWeekProps) {
     const { theme } = useTheme();
@@ -84,9 +86,16 @@ export default function CalendarWeek({
 
             {/* Month Header */}
             <View style={styles.header}>
-                <Text style={[styles.monthText, { color: theme.colors.text }]}>
-                    {monthYear}
-                </Text>
+                <TouchableOpacity
+                    onPress={onMonthPress}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                    activeOpacity={0.7}
+                >
+                    <Text style={[styles.monthText, { color: theme.colors.text }]}>
+                        {monthYear}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
                 <View style={styles.navButtons}>
                     <TouchableOpacity
                         style={[styles.navButton, glassStyle.subtle]}
@@ -110,39 +119,49 @@ export default function CalendarWeek({
                         key={day.date}
                         style={[
                             styles.dayContainer,
-                            day.isSelected && [styles.selectedContainer, shadows.glow(theme.colors.primary)],
-                            day.isToday && !day.isSelected && [styles.todayBorder, { borderColor: theme.colors.primary }],
+                            day.isSelected && styles.selectedContainer,
+                            day.isSelected && shadows.glow(theme.colors.primary),
+                            day.isToday && !day.isSelected && styles.todayBorder,
+                            day.isToday && !day.isSelected && { borderColor: theme.colors.primary },
                         ]}
                         onPress={() => onDateSelect?.(day.date)}
+                        activeOpacity={0.7}
                     >
+                        {/* Selected Background Gradient */}
                         {day.isSelected && (
-                            <LinearGradient
-                                colors={[theme.colors.primary, `${theme.colors.primary}DD`] as const}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={[StyleSheet.absoluteFill, { borderRadius: borderRadius.lg }]}
-                            />
+                            <View style={[StyleSheet.absoluteFill, { zIndex: -1, borderRadius: borderRadius.lg, overflow: 'hidden' }]}>
+                                <LinearGradient
+                                    colors={[theme.colors.primary, `${theme.colors.primary}DD`] as const}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={StyleSheet.absoluteFill}
+                                />
+                            </View>
                         )}
-                        <Text
-                            style={[
-                                styles.dayName,
-                                { color: day.isSelected ? '#000000' : theme.colors.textSecondary },
-                            ]}
-                        >
-                            {day.dayName}
-                        </Text>
-                        <Text
-                            style={[
-                                styles.dayNumber,
-                                { color: day.isSelected ? '#000000' : theme.colors.text },
-                                day.isToday && !day.isSelected && { color: theme.colors.primary },
-                            ]}
-                        >
-                            {day.dayNumber}
-                        </Text>
-                        {day.hasActivity && !day.isSelected && (
-                            <View style={[styles.activityDot, { backgroundColor: theme.colors.primary }]} />
-                        )}
+
+                        {/* Day Content */}
+                        <View style={[styles.dayContent, { elevation: 5, zIndex: 10, backgroundColor: 'transparent' }]}>
+                            <Text
+                                style={[
+                                    styles.dayName,
+                                    { color: day.isSelected ? '#000000' : theme.colors.textSecondary },
+                                ]}
+                            >
+                                {day.dayName}
+                            </Text>
+                            <Text
+                                style={[
+                                    styles.dayNumber,
+                                    { color: day.isSelected ? '#000000' : theme.colors.text },
+                                    day.isToday && !day.isSelected && { color: theme.colors.primary },
+                                ]}
+                            >
+                                {day.dayNumber}
+                            </Text>
+                            {day.hasActivity && !day.isSelected && (
+                                <View style={[styles.activityDot, { backgroundColor: theme.colors.primary }]} />
+                            )}
+                        </View>
                     </TouchableOpacity>
                 ))}
             </View>
@@ -162,6 +181,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: spacing.md,
+        zIndex: 1,
+        elevation: 2,
     },
     monthText: {
         ...typography.h3,
@@ -196,7 +217,7 @@ const styles = StyleSheet.create({
     },
     todayBorder: {
         borderWidth: 2,
-        borderStyle: 'solid',
+        backgroundColor: 'rgba(0, 255, 209, 0.1)', // Subtle background for today
     },
     dayName: {
         ...typography.caption,
@@ -206,6 +227,10 @@ const styles = StyleSheet.create({
     dayNumber: {
         ...typography.body,
         fontWeight: '700',
+    },
+    dayContent: {
+        alignItems: 'center',
+        zIndex: 1,
     },
     activityDot: {
         width: 6,

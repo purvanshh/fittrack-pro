@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import AddMealModal from '../../components/AddMealModal';
 import AddWorkoutModal from '../../components/AddWorkoutModal';
+import CalendarMonth from '../../components/CalendarMonth';
 import CalendarWeek from '../../components/CalendarWeek';
 import GlassCard from '../../components/GlassCard';
 import OvalProgress from '../../components/OvalProgress';
@@ -39,6 +40,7 @@ export default function DashboardScreen() {
     const [showMealModal, setShowMealModal] = useState(false);
     const [selectedDate, setSelectedDate] = useState(getToday());
     const [weekDate, setWeekDate] = useState(getToday());
+    const [showMonthModal, setShowMonthModal] = useState(false);
 
     const loadData = async (date: string = selectedDate) => {
         const profileData = await getProfile();
@@ -81,10 +83,15 @@ export default function DashboardScreen() {
         loadData(date);
     };
 
-    const handleWeekChange = (newWeekDate: string) => {
-        setWeekDate(newWeekDate);
-        setSelectedDate(newWeekDate);
-        loadData(newWeekDate);
+    const handleWeekChange = (newDate: string) => {
+        setWeekDate(newDate);
+    };
+
+    const handleMonthDateSelect = (date: string) => {
+        setSelectedDate(date);
+        setWeekDate(date); // Update the week view to show the selected date's week
+        setShowMonthModal(false);
+        loadData(date);
     };
 
     const handleAddWorkout = async (workout: Workout) => {
@@ -165,6 +172,14 @@ export default function DashboardScreen() {
                     activeDays={activeDays}
                     onDateSelect={handleDateSelect}
                     onWeekChange={handleWeekChange}
+                    onMonthPress={() => setShowMonthModal(true)}
+                />
+
+                <CalendarMonth
+                    visible={showMonthModal}
+                    onClose={() => setShowMonthModal(false)}
+                    selectedDate={selectedDate}
+                    onDateSelect={handleMonthDateSelect}
                 />
 
                 {/* Selected Date Info */}
@@ -552,6 +567,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.sm,
+        zIndex: 1,
+        elevation: 2,
     },
     dateInfoText: {
         ...typography.bodySmall,
