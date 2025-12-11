@@ -156,28 +156,35 @@ export default function ProfileScreen() {
             >
                 {/* Profile Header */}
                 <GlassCard style={styles.profileHeader} variant="surface">
-                    <View style={[styles.avatar, shadows.glow(theme.colors.primary)]}>
-                        <LinearGradient
-                            colors={gradients.primary}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={StyleSheet.absoluteFill}
-                        />
-                        <Text style={styles.avatarEmoji}>{currentAvatar.emoji}</Text>
-                    </View>
-                    <Text style={[styles.headerName, { color: theme.colors.text }]}>
-                        {currentProfile.name || 'Your Name'}
-                    </Text>
-                    {user?.email && (
+                    <View style={{ alignItems: 'center', width: '100%' }}>
+                        <View style={[styles.avatar, shadows.glow(theme.colors.primary)]}>
+                            <LinearGradient
+                                colors={gradients.primary}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={StyleSheet.absoluteFill}
+                            />
+                            {profile.avatar ? (
+                                <Text style={styles.avatarEmoji}>
+                                    {AVATAR_PRESETS.find(p => p.id === profile.avatar)?.emoji || '👤'}
+                                </Text>
+                            ) : (
+                                <Text style={styles.avatarEmoji}>👤</Text>
+                            )}
+                        </View>
+                        <Text style={[styles.headerName, { color: theme.colors.text }]}>
+                            {profile.name || 'User'}
+                        </Text>
                         <Text style={[styles.headerEmail, { color: theme.colors.textSecondary }]}>
-                            {user.email}
+                            {user?.email || 'No email'}
                         </Text>
-                    )}
-                    <View style={[styles.streakBadge, { backgroundColor: theme.colors.primary + '20' }]}>
-                        <Ionicons name="flame" size={16} color={theme.colors.primary} />
-                        <Text style={[styles.streakText, { color: theme.colors.primary }]}>
-                            {profile.streak} day streak
-                        </Text>
+
+                        <View style={[styles.streakBadge, { backgroundColor: theme.colors.primary + '20' }]}>
+                            <Ionicons name="flame" size={16} color={theme.colors.primary} />
+                            <Text style={[styles.streakText, { color: theme.colors.primary }]}>
+                                {profile.streak} Day Streak
+                            </Text>
+                        </View>
                     </View>
                 </GlassCard>
 
@@ -188,32 +195,34 @@ export default function ProfileScreen() {
                             Choose Avatar
                         </Text>
                         <View style={styles.avatarGrid}>
-                            {AVATAR_PRESETS.map((preset) => (
-                                <TouchableOpacity
-                                    key={preset.id}
-                                    style={[
-                                        styles.avatarOption,
-                                        glassStyle.subtle,
-                                        editedProfile.avatar === preset.id && [
-                                            styles.avatarOptionSelected,
-                                            { borderColor: theme.colors.primary },
-                                            shadows.glow(theme.colors.primary),
-                                        ],
-                                    ]}
-                                    onPress={() => setEditedProfile({ ...editedProfile, avatar: preset.id })}
-                                >
-                                    {editedProfile.avatar === preset.id && (
-                                        <LinearGradient
-                                            colors={[theme.colors.primary + '30', theme.colors.primary + '10']}
-                                            style={StyleSheet.absoluteFill}
-                                        />
-                                    )}
-                                    <Text style={styles.avatarOptionEmoji}>{preset.emoji}</Text>
-                                    <Text style={[styles.avatarOptionLabel, { color: theme.colors.textSecondary }]}>
-                                        {preset.label}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
+                            {AVATAR_PRESETS.map((preset) => {
+                                const isSelected = editedProfile.avatar === preset.id;
+                                return (
+                                    <TouchableOpacity
+                                        key={preset.id}
+                                        style={[
+                                            styles.avatarOption,
+                                            { backgroundColor: isSelected ? theme.colors.primary + '25' : theme.colors.surface + '40' },
+                                            isSelected && [
+                                                styles.avatarOptionSelected,
+                                                { borderColor: theme.colors.primary },
+                                            ],
+                                        ]}
+                                        onPress={() => setEditedProfile({ ...editedProfile, avatar: preset.id })}
+                                    >
+                                        {isSelected && (
+                                            <LinearGradient
+                                                colors={[theme.colors.primary + '40', theme.colors.primary + '20']}
+                                                style={StyleSheet.absoluteFill}
+                                            />
+                                        )}
+                                        <Text style={styles.avatarOptionEmoji}>{preset.emoji}</Text>
+                                        <Text style={[styles.avatarOptionLabel, { color: isSelected ? theme.colors.primary : theme.colors.textSecondary }]}>
+                                            {preset.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
                     </GlassCard>
                 )}
@@ -550,6 +559,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: spacing.md,
         overflow: 'hidden',
+        alignSelf: 'center',
     },
     avatarEmoji: {
         fontSize: 48,
@@ -557,10 +567,12 @@ const styles = StyleSheet.create({
     headerName: {
         ...typography.h2,
         marginBottom: spacing.xs,
+        textAlign: 'center',
     },
     headerEmail: {
         ...typography.bodySmall,
         marginBottom: spacing.sm,
+        textAlign: 'center',
     },
     streakBadge: {
         flexDirection: 'row',
