@@ -3,7 +3,6 @@ import {
     DailyStats,
     DEFAULT_PROFILE,
     Meal,
-    STORAGE_KEYS,
     UserProfile,
     WaterIntake,
     Workout,
@@ -12,13 +11,43 @@ import { calculateStreak, getLast7Days, getToday } from './dateUtils';
 
 // ============================================
 // FitTrack Pro - Storage Utilities
+// User-Specific Storage with User ID Namespacing
 // ============================================
+
+// Current user ID - set when user logs in
+let currentUserId: string | null = null;
+
+export function setCurrentUserId(userId: string | null): void {
+    currentUserId = userId;
+    console.log('Storage: User ID set to:', userId);
+}
+
+export function getCurrentUserId(): string | null {
+    return currentUserId;
+}
+
+// Generate user-specific storage key
+function getUserKey(baseKey: string): string {
+    if (!currentUserId) {
+        // Fallback for when no user is logged in (shouldn't happen normally)
+        return `@fittrack_guest_${baseKey}`;
+    }
+    return `@fittrack_${currentUserId}_${baseKey}`;
+}
+
+// Storage key constants (base keys without user prefix)
+const KEYS = {
+    WORKOUTS: 'workouts',
+    MEALS: 'meals',
+    WATER: 'water',
+    PROFILE: 'profile',
+};
 
 // ==================== WORKOUTS ====================
 
 export async function getWorkouts(): Promise<Workout[]> {
     try {
-        const data = await AsyncStorage.getItem(STORAGE_KEYS.WORKOUTS);
+        const data = await AsyncStorage.getItem(getUserKey(KEYS.WORKOUTS));
         return data ? JSON.parse(data) : [];
     } catch (error) {
         console.error('Error getting workouts:', error);
@@ -30,7 +59,7 @@ export async function saveWorkout(workout: Workout): Promise<void> {
     try {
         const workouts = await getWorkouts();
         workouts.push(workout);
-        await AsyncStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(workouts));
+        await AsyncStorage.setItem(getUserKey(KEYS.WORKOUTS), JSON.stringify(workouts));
         await updateStreak();
     } catch (error) {
         console.error('Error saving workout:', error);
@@ -41,7 +70,7 @@ export async function deleteWorkout(id: string): Promise<void> {
     try {
         const workouts = await getWorkouts();
         const filtered = workouts.filter(w => w.id !== id);
-        await AsyncStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(filtered));
+        await AsyncStorage.setItem(getUserKey(KEYS.WORKOUTS), JSON.stringify(filtered));
     } catch (error) {
         console.error('Error deleting workout:', error);
     }
@@ -57,7 +86,7 @@ export async function getTodayWorkouts(): Promise<Workout[]> {
 
 export async function getMeals(): Promise<Meal[]> {
     try {
-        const data = await AsyncStorage.getItem(STORAGE_KEYS.MEALS);
+        const data = await AsyncStorage.getItem(getUserKey(KEYS.MEALS));
         return data ? JSON.parse(data) : [];
     } catch (error) {
         console.error('Error getting meals:', error);
@@ -69,7 +98,7 @@ export async function saveMeal(meal: Meal): Promise<void> {
     try {
         const meals = await getMeals();
         meals.push(meal);
-        await AsyncStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(meals));
+        await AsyncStorage.setItem(getUserKey(KEYS.MEALS), JSON.stringify(meals));
         await updateStreak();
     } catch (error) {
         console.error('Error saving meal:', error);
@@ -80,7 +109,7 @@ export async function deleteMeal(id: string): Promise<void> {
     try {
         const meals = await getMeals();
         const filtered = meals.filter(m => m.id !== id);
-        await AsyncStorage.setItem(STORAGE_KEYS.MEALS, JSON.stringify(filtered));
+        await AsyncStorage.setItem(getUserKey(KEYS.MEALS), JSON.stringify(filtered));
     } catch (error) {
         console.error('Error deleting meal:', error);
     }
@@ -96,7 +125,7 @@ export async function getTodayMeals(): Promise<Meal[]> {
 
 export async function getWaterIntakes(): Promise<WaterIntake[]> {
     try {
-        const data = await AsyncStorage.getItem(STORAGE_KEYS.WATER);
+        const data = await AsyncStorage.getItem(getUserKey(KEYS.WATER));
         return data ? JSON.parse(data) : [];
     } catch (error) {
         console.error('Error getting water intakes:', error);
@@ -108,7 +137,7 @@ export async function saveWaterIntake(intake: WaterIntake): Promise<void> {
     try {
         const intakes = await getWaterIntakes();
         intakes.push(intake);
-        await AsyncStorage.setItem(STORAGE_KEYS.WATER, JSON.stringify(intakes));
+        await AsyncStorage.setItem(getUserKey(KEYS.WATER), JSON.stringify(intakes));
         await updateStreak();
     } catch (error) {
         console.error('Error saving water intake:', error);
@@ -119,7 +148,7 @@ export async function deleteWaterIntake(id: string): Promise<void> {
     try {
         const intakes = await getWaterIntakes();
         const filtered = intakes.filter(i => i.id !== id);
-        await AsyncStorage.setItem(STORAGE_KEYS.WATER, JSON.stringify(filtered));
+        await AsyncStorage.setItem(getUserKey(KEYS.WATER), JSON.stringify(filtered));
     } catch (error) {
         console.error('Error deleting water intake:', error);
     }
@@ -140,7 +169,7 @@ export async function getTodayWaterTotal(): Promise<number> {
 
 export async function getProfile(): Promise<UserProfile> {
     try {
-        const data = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE);
+        const data = await AsyncStorage.getItem(getUserKey(KEYS.PROFILE));
         return data ? JSON.parse(data) : DEFAULT_PROFILE;
     } catch (error) {
         console.error('Error getting profile:', error);
@@ -150,7 +179,7 @@ export async function getProfile(): Promise<UserProfile> {
 
 export async function saveProfile(profile: UserProfile): Promise<void> {
     try {
-        await AsyncStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+        await AsyncStorage.setItem(getUserKey(KEYS.PROFILE), JSON.stringify(profile));
     } catch (error) {
         console.error('Error saving profile:', error);
     }
@@ -204,11 +233,12 @@ export async function getWeeklyStats(): Promise<DailyStats[]> {
 
 export async function clearAllData(): Promise<void> {
     try {
+        // Only clear data for current user
         await AsyncStorage.multiRemove([
-            STORAGE_KEYS.WORKOUTS,
-            STORAGE_KEYS.MEALS,
-            STORAGE_KEYS.WATER,
-            STORAGE_KEYS.PROFILE,
+            getUserKey(KEYS.WORKOUTS),
+            getUserKey(KEYS.MEALS),
+            getUserKey(KEYS.WATER),
+            getUserKey(KEYS.PROFILE),
         ]);
     } catch (error) {
         console.error('Error clearing data:', error);
