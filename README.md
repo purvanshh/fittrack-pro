@@ -6,11 +6,10 @@ A comprehensive fitness tracking mobile application built with React Native and 
 ![Expo](https://img.shields.io/badge/Expo-~54.0-000020?logo=expo)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)
 
-## 📱 Download
-
-[![Download APK](https://img.shields.io/badge/Download-APK-green?style=for-the-badge&logo=android)](https://github.com/purvanshh/fittrack-pro/releases/download/v1.0.0/FitTrackPro-v1.0.0.apk)
-
-> **[Download FitTrack Pro v1.0.0](https://github.com/purvanshh/fittrack-pro/releases/tag/v1.0.0)** — Install directly on Android
+## 📱 Download the App
+Start tracking your fitness journey today!
+[**Download FitTrack Pro v1.0.1 for Android**](https://github.com/purvanshh/fittrack-pro/releases/download/v1.0.1/FitTrackPro-v1.0.1.apk)
+[View All Releases](https://github.com/purvanshh/fittrack-pro/releases)
 
 ---
 
