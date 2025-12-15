@@ -114,37 +114,29 @@ export default function CalendarWeek({
 
             {/* Week Days */}
             <View style={styles.weekContainer}>
-                {weekDates.map((day) => (
-                    <TouchableOpacity
-                        key={day.date}
-                        style={[
-                            styles.dayContainer,
-                            day.isSelected && styles.selectedContainer,
-                            day.isSelected && shadows.glow(theme.colors.primary),
-                            day.isToday && !day.isSelected && styles.todayBorder,
-                            day.isToday && !day.isSelected && { borderColor: theme.colors.primary },
-                        ]}
-                        onPress={() => onDateSelect?.(day.date)}
-                        activeOpacity={0.7}
-                    >
-                        {/* Selected Background Gradient */}
-                        {day.isSelected && (
-                            <View style={[StyleSheet.absoluteFill, { zIndex: -1, borderRadius: borderRadius.lg, overflow: 'hidden' }]}>
-                                <LinearGradient
-                                    colors={[theme.colors.primary, `${theme.colors.primary}DD`] as const}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    style={StyleSheet.absoluteFill}
-                                />
-                            </View>
-                        )}
+                {weekDates.map((day) => {
+                    // Determine text colors based on state
+                    const textColor = day.isSelected ? '#000000' : theme.colors.text;
+                    const subtextColor = day.isSelected ? 'rgba(0,0,0,0.7)' : theme.colors.textSecondary;
+                    const todayHighlight = day.isToday && !day.isSelected ? theme.colors.primary : null;
 
-                        {/* Day Content */}
-                        <View style={[styles.dayContent, { elevation: 5, zIndex: 10, backgroundColor: 'transparent' }]}>
+                    return (
+                        <TouchableOpacity
+                            key={day.date}
+                            style={[
+                                styles.dayContainer,
+                                day.isSelected && styles.selectedContainer,
+                                day.isSelected && { backgroundColor: theme.colors.primary },
+                                day.isToday && !day.isSelected && styles.todayBorder,
+                                day.isToday && !day.isSelected && { borderColor: theme.colors.primary },
+                            ]}
+                            onPress={() => onDateSelect?.(day.date)}
+                            activeOpacity={0.7}
+                        >
                             <Text
                                 style={[
                                     styles.dayName,
-                                    { color: day.isSelected ? '#000000' : theme.colors.textSecondary },
+                                    { color: subtextColor },
                                 ]}
                             >
                                 {day.dayName}
@@ -152,8 +144,8 @@ export default function CalendarWeek({
                             <Text
                                 style={[
                                     styles.dayNumber,
-                                    { color: day.isSelected ? '#000000' : theme.colors.text },
-                                    day.isToday && !day.isSelected && { color: theme.colors.primary },
+                                    { color: todayHighlight || textColor },
+                                    { fontWeight: '700' },
                                 ]}
                             >
                                 {day.dayNumber}
@@ -161,9 +153,9 @@ export default function CalendarWeek({
                             {day.hasActivity && !day.isSelected && (
                                 <View style={[styles.activityDot, { backgroundColor: theme.colors.primary }]} />
                             )}
-                        </View>
-                    </TouchableOpacity>
-                ))}
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
         </View>
     );

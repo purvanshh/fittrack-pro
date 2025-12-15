@@ -2,9 +2,9 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import NotificationSetup from "../components/NotificationSetup";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
-import { requestNotificationPermissions } from "../utils/notifications";
 
 // Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -36,23 +36,19 @@ function RootLayoutContent() {
   const { loading } = useAuth();
 
   useEffect(() => {
-    // Initialize app
-    async function initialize() {
-      // Request notification permissions
-      await requestNotificationPermissions();
-
-      // Hide splash screen after auth is checked
+    // Hide splash screen after auth is checked
+    async function hideSplash() {
       if (!loading) {
         await SplashScreen.hideAsync();
       }
     }
-
-    initialize();
+    hideSplash();
   }, [loading]);
 
   return (
     <>
       <StatusBar style="light" />
+      <NotificationSetup />
       <AuthNavigator />
       <Stack
         screenOptions={{

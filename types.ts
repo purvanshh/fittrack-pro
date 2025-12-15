@@ -54,6 +54,8 @@ export interface NotificationPreferences {
     waterReminderInterval: number; // in hours
     workoutReminders: boolean;
     workoutReminderTime: string; // HH:mm format
+    mealNotifications: boolean; // Goal achievement notifications for meals
+    streakNotifications: boolean; // Streak milestone notifications
 }
 
 export interface UserProfile {
@@ -137,6 +139,8 @@ export const DEFAULT_NOTIFICATIONS: NotificationPreferences = {
     waterReminderInterval: 2,
     workoutReminders: true,
     workoutReminderTime: '09:00',
+    mealNotifications: true,
+    streakNotifications: true,
 };
 
 export const DEFAULT_PROFILE: UserProfile = {
