@@ -8,7 +8,7 @@ A comprehensive fitness tracking mobile application built with React Native and 
 
 ## 📱 Download the App
 Start tracking your fitness journey today!
-[**Download FitTrack Pro v1.0.1 for Android**](https://github.com/purvanshh/fittrack-pro/releases/download/v1.0.1/FitTrackPro-v1.0.1.apk)
+[**Download FitTrack Pro v1.0.2 for Android**](https://github.com/purvanshh/fittrack-pro/releases/download/v1.0.2/FitTrackPro-v1.0.2.apk)
 [View All Releases](https://github.com/purvanshh/fittrack-pro/releases)
 
 ---
@@ -26,7 +26,7 @@ Start tracking your fitness journey today!
 - **Personalized Greeting** - Welcome message with your name
 - **Goals Overview Card** - Quick view of daily water, calorie, and workout goals with tap-to-edit
 - **Progress Rings** - Visual circular progress indicators for water, calories, and workouts
-- **Streak Tracking** - Fire badge showing consecutive active days
+- **Streak Counter** - Flashy orange streak badge in the header showing consecutive active days
 - **Quick Actions** - One-tap buttons to log workouts, water, or meals
 - **Smart Summary** - Today's stats with percentage of goals completed
 
@@ -59,7 +59,7 @@ Start tracking your fitness journey today!
 ### 👤 Profile & Settings
 - **Personal Details** - Name, weight, height
 - **Custom Goals** - Set your own daily water (ml), calorie, and weekly workout targets
-- **Notification Preferences** - Toggle water and workout reminders
+- **Notification Preferences** - Toggle water reminders, workout reminders, meal goal notifications, and streak notifications
 - **Theme Toggle** - Switch between light and dark mode
 - **Data Management** - Clear all data option
 
@@ -187,9 +187,11 @@ fittrack-pro/
 > **Note:** Push notifications require a development build and are not available in Expo Go.
 
 To enable notifications in a development build:
-1. Go to **Profile** → **Preferences**
+1. Go to **Profile** → **Notifications**
 2. Toggle **Water Reminders** (reminds every 2 hours)
 3. Toggle **Workout Reminders** (daily reminder at 9:00 AM)
+4. Toggle **Meal Goal Notifications** (get notified when you reach your calorie goal)
+5. Toggle **Streak Notifications** (celebrate your streak milestones)
 
 ---
 
