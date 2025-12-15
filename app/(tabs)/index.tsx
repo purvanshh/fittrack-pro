@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import AddMealModal from '../../components/AddMealModal';
+
 import AddWorkoutModal from '../../components/AddWorkoutModal';
 import CalendarMonth from '../../components/CalendarMonth';
 import CalendarWeek from '../../components/CalendarWeek';
@@ -19,12 +19,11 @@ import OvalProgress from '../../components/OvalProgress';
 import QuickActionButton from '../../components/QuickActionButton';
 import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { DailyStats, Meal, UserProfile, Workout } from '../../types';
+import { DailyStats, UserProfile, Workout } from '../../types';
 import { generateId, getCurrentTime, getToday } from '../../utils/dateUtils';
 import {
     getDailyStats,
     getProfile,
-    saveMeal,
     saveWaterIntake,
     saveWorkout
 } from '../../utils/storage';
@@ -37,7 +36,7 @@ export default function DashboardScreen() {
     const [activeDays, setActiveDays] = useState<string[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const [showWorkoutModal, setShowWorkoutModal] = useState(false);
-    const [showMealModal, setShowMealModal] = useState(false);
+
     const [selectedDate, setSelectedDate] = useState(getToday());
     const [weekDate, setWeekDate] = useState(getToday());
     const [showMonthModal, setShowMonthModal] = useState(false);
@@ -99,10 +98,7 @@ export default function DashboardScreen() {
         await loadData();
     };
 
-    const handleAddMeal = async (meal: Meal) => {
-        await saveMeal(meal);
-        await loadData();
-    };
+
 
     const handleQuickWater = async () => {
         await saveWaterIntake({
@@ -148,20 +144,16 @@ export default function DashboardScreen() {
                         <Text style={[styles.greeting, { color: theme.colors.text }]}>
                             {profile?.name ? `Hi ${profile.name}` : 'Your Activity'}
                         </Text>
-                        {profile && profile.streak > 0 && (
-                            <View style={[styles.streakBadge, { backgroundColor: theme.colors.primary + '20' }]}>
-                                <Ionicons name="flash" size={14} color={theme.colors.primary} />
-                                <Text style={[styles.streakLabel, { color: theme.colors.primary }]}>
-                                    {profile.streak} day streak
-                                </Text>
-                            </View>
-                        )}
                     </View>
                     <TouchableOpacity
-                        style={[styles.menuButton, glassStyle.card, shadows.glass]}
+                        style={[styles.streakCounter, { backgroundColor: '#FF6B35' }]}
                         onPress={() => router.push('/profile')}
+                        activeOpacity={0.8}
                     >
-                        <Ionicons name="grid-outline" size={20} color={theme.colors.text} />
+                        <Ionicons name="flame" size={18} color="#FFFFFF" />
+                        <Text style={styles.streakCounterText}>
+                            {profile?.streak || 0}
+                        </Text>
                     </TouchableOpacity>
                 </View>
 
@@ -315,7 +307,7 @@ export default function DashboardScreen() {
                         icon="restaurant-outline"
                         label="Meal"
                         color={theme.colors.calories}
-                        onPress={() => setShowMealModal(true)}
+                        onPress={() => router.push('/(tabs)/meals')}
                         style={styles.actionButton}
                     />
                 </View>
@@ -349,11 +341,7 @@ export default function DashboardScreen() {
                     onClose={() => setShowWorkoutModal(false)}
                     onSave={handleAddWorkout}
                 />
-                <AddMealModal
-                    visible={showMealModal}
-                    onClose={() => setShowMealModal(false)}
-                    onSave={handleAddMeal}
-                />
+
             </ScrollView>
         </View>
     );
@@ -424,6 +412,24 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    streakCounter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: borderRadius.full,
+        shadowColor: '#FF6B35',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    streakCounterText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '700',
     },
     challengeCard: {
         flexDirection: 'row',

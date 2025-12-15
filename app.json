@@ -4,6 +4,7 @@
     "slug": "fittrack-pro",
     "version": "1.0.1",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "scheme": "fittrackpro",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,6 +15,7 @@
     "android": {
       "package": "com.purvansh.fittrackpro",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
@@ -34,6 +36,15 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#14B8A6",
+          "defaultChannel": "default",
+          "sounds": []
         }
       ]
     ],

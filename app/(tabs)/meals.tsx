@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
+    Alert,
     RefreshControl,
     ScrollView,
     StyleSheet,
@@ -10,7 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import AddMealModal from '../../components/AddMealModal';
+
 import GlassCard from '../../components/GlassCard';
 import MealCard from '../../components/MealCard';
 import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
@@ -29,7 +30,7 @@ export default function MealsScreen() {
     const [todayMeals, setTodayMeals] = useState<Meal[]>([]);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [refreshing, setRefreshing] = useState(false);
-    const [showModal, setShowModal] = useState(false);
+
 
     const glassStyle = isDark ? glassStyles.dark : glassStyles.light;
 
@@ -177,7 +178,7 @@ export default function MealsScreen() {
                 {/* Add Meal Button */}
                 <TouchableOpacity
                     style={[styles.addButton, shadows.glow(theme.colors.primary)]}
-                    onPress={() => setShowModal(true)}
+                    onPress={() => Alert.alert('Log Meal', 'Use the meal presets below to quickly add common meals.')}
                 >
                     <LinearGradient
                         colors={gradients.primary}
@@ -213,12 +214,7 @@ export default function MealsScreen() {
                     ))
                 )}
 
-                {/* Modal */}
-                <AddMealModal
-                    visible={showModal}
-                    onClose={() => setShowModal(false)}
-                    onSave={handleAddMeal}
-                />
+
             </ScrollView>
         </View>
     );

@@ -90,6 +90,26 @@ export default function ProfileScreen() {
         await updateNotificationSchedules(updated.notifications);
     };
 
+    const handleToggleMealNotifications = async (value: boolean) => {
+        const updated = {
+            ...profile,
+            notifications: { ...profile.notifications, mealNotifications: value },
+        };
+        setProfile(updated);
+        setEditedProfile(updated);
+        await saveProfile(updated);
+    };
+
+    const handleToggleStreakNotifications = async (value: boolean) => {
+        const updated = {
+            ...profile,
+            notifications: { ...profile.notifications, streakNotifications: value },
+        };
+        setProfile(updated);
+        setEditedProfile(updated);
+        await saveProfile(updated);
+    };
+
     const handleClearData = () => {
         Alert.alert(
             'Clear All Data',
@@ -474,6 +494,36 @@ export default function ProfileScreen() {
                             onValueChange={handleToggleWorkoutReminders}
                             trackColor={{ false: theme.colors.border, true: theme.colors.workout + '50' }}
                             thumbColor={profile.notifications.workoutReminders ? theme.colors.workout : theme.colors.surfaceVariant}
+                        />
+                    </View>
+
+                    <View style={styles.toggleRow}>
+                        <View style={styles.toggleInfo}>
+                            <View style={[styles.toggleIcon, { backgroundColor: theme.colors.calories + '20' }]}>
+                                <Ionicons name="restaurant" size={20} color={theme.colors.calories} />
+                            </View>
+                            <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Meal Goal Notifications</Text>
+                        </View>
+                        <Switch
+                            value={profile.notifications.mealNotifications}
+                            onValueChange={handleToggleMealNotifications}
+                            trackColor={{ false: theme.colors.border, true: theme.colors.calories + '50' }}
+                            thumbColor={profile.notifications.mealNotifications ? theme.colors.calories : theme.colors.surfaceVariant}
+                        />
+                    </View>
+
+                    <View style={styles.toggleRow}>
+                        <View style={styles.toggleInfo}>
+                            <View style={[styles.toggleIcon, { backgroundColor: theme.colors.primary + '20' }]}>
+                                <Ionicons name="flame" size={20} color={theme.colors.primary} />
+                            </View>
+                            <Text style={[styles.toggleLabel, { color: theme.colors.text }]}>Streak Notifications</Text>
+                        </View>
+                        <Switch
+                            value={profile.notifications.streakNotifications}
+                            onValueChange={handleToggleStreakNotifications}
+                            trackColor={{ false: theme.colors.border, true: theme.colors.primary + '50' }}
+                            thumbColor={profile.notifications.streakNotifications ? theme.colors.primary : theme.colors.surfaceVariant}
                         />
                     </View>
                 </GlassCard>
