@@ -8,7 +8,7 @@ A comprehensive fitness tracking mobile application built with React Native and 
 
 ## 📱 Download the App
 Start tracking your fitness journey today!
-[**Download FitTrack Pro v1.0.2 for Android**](https://github.com/purvanshh/fittrack-pro/releases/download/v1.0.2/FitTrackPro-v1.0.2.apk)
+[**Download FitTrack Pro v1.1.0 for Android**](https://github.com/purvanshh/fittrack-pro/releases/download/v1.1.0/FitTrackPro-v1.1.0.apk)
 [View All Releases](https://github.com/purvanshh/fittrack-pro/releases)
 
 ---
@@ -23,12 +23,20 @@ Start tracking your fitness journey today!
 - **Glass-Themed Login** - Beautiful login screen with smooth animations
 
 ### 🏠 Dashboard
-- **Personalized Greeting** - Welcome message with your name
+- **Personalized Greeting** - Welcome message with your name (loads immediately on startup)
 - **Goals Overview Card** - Quick view of daily water, calorie, and workout goals with tap-to-edit
 - **Progress Rings** - Visual circular progress indicators for water, calories, and workouts
 - **Streak Counter** - Flashy orange streak badge in the header showing consecutive active days
+- **Steps Progress Card** - Real-time step count with daily goal progress
 - **Quick Actions** - One-tap buttons to log workouts, water, or meals
 - **Smart Summary** - Today's stats with percentage of goals completed
+
+### 👟 Step Counter (NEW in v1.1.0)
+- **Real-Time Step Tracking** - Uses your device's pedometer sensor
+- **Daily Step Goal** - Set your personalized daily step target in Profile
+- **Progress Visualization** - Beautiful animated progress ring
+- **Steps Remaining** - See how many steps left to reach your goal
+- **Dashboard Integration** - View step progress on the home screen
 
 ### 🏋️ Workout Tracker
 - **8 Workout Types** - Running, Cycling, Swimming, Weight Training, Yoga, HIIT, Walking, Other
@@ -58,7 +66,7 @@ Start tracking your fitness journey today!
 
 ### 👤 Profile & Settings
 - **Personal Details** - Name, weight, height
-- **Custom Goals** - Set your own daily water (ml), calorie, and weekly workout targets
+- **Custom Goals** - Set your own daily water (ml), calorie, steps, and weekly workout targets
 - **Notification Preferences** - Toggle water reminders, workout reminders, meal goal notifications, and streak notifications
 - **Theme Toggle** - Switch between light and dark mode
 - **Data Management** - Clear all data option
@@ -117,6 +125,7 @@ Start tracking your fitness journey today!
 - **Charts:** react-native-chart-kit
 - **Icons:** @expo/vector-icons (Ionicons)
 - **Notifications:** expo-notifications (requires development build)
+- **Sensors:** expo-sensors (Pedometer for step counting)
 
 ---
 
@@ -130,6 +139,7 @@ fittrack-pro/
 │   │   ├── workout.tsx      # Workout Tracker
 │   │   ├── water.tsx        # Water Tracker
 │   │   ├── meals.tsx        # Meal Tracker
+│   │   ├── steps.tsx        # Step Counter (NEW)
 │   │   └── profile.tsx      # Profile & Settings (+ Sign Out)
 │   ├── login.tsx            # Login/Sign-up screen
 │   ├── weekly-report.tsx    # Weekly Analytics
@@ -145,7 +155,8 @@ fittrack-pro/
 │   └── theme.ts
 ├── context/                 # React Context
 │   ├── ThemeContext.tsx     # Theme state
-│   └── AuthContext.tsx      # Authentication state
+│   ├── AuthContext.tsx      # Authentication state
+│   └── StepContext.tsx      # Step counter state (NEW)
 ├── src/supabase/            # Supabase integration
 │   ├── supabaseClient.ts    # Supabase client setup
 │   └── auth.ts              # Auth helper functions
@@ -168,6 +179,7 @@ fittrack-pro/
 3. Modify your daily goals:
    - Water Goal (ml) - default: 2500ml
    - Calorie Goal - default: 2000 kcal
+   - Steps Goal - default: 10,000 steps (NEW)
    - Weekly Workouts - default: 5
 4. Tap **Save**
 
@@ -237,8 +249,8 @@ All data is stored locally using AsyncStorage with per-user isolation:
 
 ## 🐛 Known Issues
 
-- **Expo Go Limitation:** Push notifications are not supported in Expo Go (SDK 53+). Use a development build for full notification functionality.
-- **Web Version:** Limited functionality on web platform due to native dependencies.
+- **Expo Go Limitation:** Push notifications and step counter permissions are not fully supported in Expo Go. Use a development build or install the APK for full functionality.
+- **Web Version:** Limited functionality on web platform due to native dependencies (step counter not available on web).
 
 ---
 
