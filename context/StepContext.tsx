@@ -1,6 +1,6 @@
 import { Pedometer } from 'expo-sensors';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { getProfile } from '../utils/storage';
 
 interface StepContextType {
@@ -34,42 +34,52 @@ export function StepProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         let isMounted = true;
+        let sub: any = null;
 
         const setupPedometer = async () => {
-            // Load goal from profile
             await loadGoalFromProfile();
 
-            // 1. Check if Pedometer is available on the device
             try {
                 const isAvailable = await Pedometer.isAvailableAsync();
                 if (!isMounted) return;
                 setIsPedometerAvailable(String(isAvailable));
 
                 if (isAvailable) {
-                    // 2. Request Permissions (Android specifically needs ACTIVITY_RECOGNITION)
                     if (Platform.OS === 'android') {
                         const { status } = await Pedometer.requestPermissionsAsync();
                         if (status !== 'granted') {
-                            Alert.alert('Permission Denied', 'Step counting requires permission to access your activity data.');
+                            // User denied permission. We can't do anything.
+                            // Maybe set available to 'false' to show UI warning?
+                            // But usually we just let it be.
                             return;
                         }
                     }
 
-                    // 3. Get steps for today (so far)
-                    const end = new Date();
+                    // 1. Try to get historical steps for today
                     const start = new Date();
                     start.setHours(0, 0, 0, 0);
+                    const end = new Date();
 
-                    const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
-                    if (isMounted) {
-                        setSteps(pastStepCountResult.steps);
+                    let initialSteps = 0;
+                    try {
+                        const history = await Pedometer.getStepCountAsync(start, end);
+                        initialSteps = history.steps;
+                    } catch (error) {
+                        console.log('Failed to fetch step history:', error);
+                        // If history fails, we essentially start fresh or from 0 for this session
+                        // In a real production app, we might want to cache the last known steps in AsyncStorage
                     }
 
-                    // 4. Subscribe to real-time updates
-                    const sub = Pedometer.watchStepCount(result => {
-                        Pedometer.getStepCountAsync(start, new Date()).then(result => {
-                            if (isMounted) setSteps(result.steps);
-                        }).catch(err => console.log("Error fetching steps in watcher", err));
+                    if (isMounted) {
+                        setSteps(initialSteps);
+                    }
+
+                    // 2. Subscribe to real-time updates
+                    // relying on 'result.steps' being the DELTA since last update
+                    sub = Pedometer.watchStepCount(result => {
+                        if (isMounted) {
+                            setSteps(currentSteps => currentSteps + result.steps);
+                        }
                     });
 
                     setSubscription(sub);
@@ -77,7 +87,7 @@ export function StepProvider({ children }: { children: React.ReactNode }) {
             } catch (error) {
                 if (isMounted) {
                     setIsPedometerAvailable('false');
-                    console.log('Pedometer error:', error);
+                    console.log('Pedometer setup error:', error);
                 }
             }
         };
@@ -86,7 +96,12 @@ export function StepProvider({ children }: { children: React.ReactNode }) {
 
         return () => {
             isMounted = false;
-            subscription && subscription.remove();
+            // Cleanup subscription
+            if (sub) {
+                sub.remove();
+            } else if (subscription) {
+                subscription.remove();
+            }
         };
     }, []);
 
