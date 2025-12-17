@@ -47,6 +47,7 @@ export interface UserGoals {
     dailyWater: number; // in ml
     dailyCalories: number;
     weeklyWorkouts: number;
+    dailySteps: number;
 }
 
 export interface NotificationPreferences {
@@ -132,6 +133,7 @@ export const DEFAULT_GOALS: UserGoals = {
     dailyWater: 2500, // 2.5 liters
     dailyCalories: 2000,
     weeklyWorkouts: 5,
+    dailySteps: 10000,
 };
 
 export const DEFAULT_NOTIFICATIONS: NotificationPreferences = {

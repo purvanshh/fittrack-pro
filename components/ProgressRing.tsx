@@ -47,9 +47,19 @@ export default function ProgressRing({
     }, [clampedProgress, animated]);
 
     const percentage = Math.round(clampedProgress * 100);
-
-    // For the visual representation, we'll use multiple overlapping half-circles
     const innerSize = size - strokeWidth * 2;
+
+    // Interpolate opacity for left half - only visible after 0%
+    const leftHalfOpacity = animatedProgress.interpolate({
+        inputRange: [0, 0.001, 1],
+        outputRange: [0, 1, 1],
+    });
+
+    // Interpolate opacity for right half - only visible after 50%
+    const rightHalfOpacity = animatedProgress.interpolate({
+        inputRange: [0, 0.499, 0.5, 1],
+        outputRange: [0, 0, 1, 1],
+    });
 
     return (
         <View style={[styles.container, { width: size, height: size }]}>
@@ -81,6 +91,7 @@ export default function ProgressRing({
                             borderRightColor: 'transparent',
                             borderTopColor: 'transparent',
                             left: 0,
+                            opacity: leftHalfOpacity,
                             transform: [
                                 {
                                     rotate: animatedProgress.interpolate({
@@ -108,6 +119,7 @@ export default function ProgressRing({
                             borderLeftColor: 'transparent',
                             borderBottomColor: 'transparent',
                             right: 0,
+                            opacity: rightHalfOpacity,
                             transform: [
                                 {
                                     rotate: animatedProgress.interpolate({

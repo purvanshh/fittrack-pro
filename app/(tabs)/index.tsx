@@ -18,6 +18,7 @@ import GlassCard from '../../components/GlassCard';
 import OvalProgress from '../../components/OvalProgress';
 import QuickActionButton from '../../components/QuickActionButton';
 import { borderRadius, glassStyles, gradients, shadows, spacing, typography } from '../../constants/theme';
+import { useSteps } from '../../context/StepContext';
 import { useTheme } from '../../context/ThemeContext';
 import { DailyStats, UserProfile, Workout } from '../../types';
 import { generateId, getCurrentTime, getToday } from '../../utils/dateUtils';
@@ -30,6 +31,7 @@ import {
 
 export default function DashboardScreen() {
     const { theme } = useTheme();
+    const { steps, goal: stepGoal, refreshGoal } = useSteps();
     const isDark = theme.mode === 'dark';
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [stats, setStats] = useState<DailyStats | null>(null);
@@ -65,9 +67,17 @@ export default function DashboardScreen() {
         setActiveDays(activeDaysArray);
     };
 
+    // Load data immediately on mount
+    React.useEffect(() => {
+        loadData(selectedDate);
+        refreshGoal();
+    }, []);
+
+    // Also refresh when screen comes into focus
     useFocusEffect(
         useCallback(() => {
             loadData(selectedDate);
+            refreshGoal(); // Refresh step goal from profile
         }, [selectedDate, weekDate])
     );
 
@@ -243,6 +253,30 @@ export default function DashboardScreen() {
                         />
                     </GlassCard>
                 </View>
+
+                {/* Steps Progress Card */}
+                <TouchableOpacity
+                    onPress={() => router.push('/(tabs)/steps')}
+                    activeOpacity={0.9}
+                >
+                    <GlassCard style={styles.stepsCard} variant="card">
+                        <View style={styles.stepsContent}>
+                            <View style={[styles.stepsIconContainer, { backgroundColor: theme.colors.primary + '20' }]}>
+                                <Ionicons name="walk" size={28} color={theme.colors.primary} />
+                            </View>
+                            <View style={styles.stepsInfo}>
+                                <Text style={[styles.stepsLabel, { color: theme.colors.textSecondary }]}>Today's Steps</Text>
+                                <Text style={[styles.stepsValue, { color: theme.colors.text }]}>{steps.toLocaleString()}</Text>
+                                <Text style={[styles.stepsGoal, { color: theme.colors.textSecondary }]}>Goal: {stepGoal.toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.stepsProgress}>
+                                <Text style={[styles.stepsPercent, { color: theme.colors.primary }]}>
+                                    {Math.min(Math.round((steps / stepGoal) * 100), 100)}%
+                                </Text>
+                            </View>
+                        </View>
+                    </GlassCard>
+                </TouchableOpacity>
 
                 {/* Stats Cards */}
                 <View style={styles.statsRow}>
@@ -583,6 +617,44 @@ const styles = StyleSheet.create({
     todayLink: {
         ...typography.bodySmall,
         fontWeight: '600',
+    },
+    // Steps card styles
+    stepsCard: {
+        marginBottom: spacing.md,
+    },
+    stepsContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.md,
+    },
+    stepsIconContainer: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    stepsInfo: {
+        flex: 1,
+    },
+    stepsLabel: {
+        ...typography.caption,
+        marginBottom: 2,
+    },
+    stepsValue: {
+        fontSize: 24,
+        fontWeight: '700',
+    },
+    stepsGoal: {
+        ...typography.caption,
+        marginTop: 2,
+    },
+    stepsProgress: {
+        alignItems: 'flex-end',
+    },
+    stepsPercent: {
+        fontSize: 20,
+        fontWeight: '700',
     },
 });
 

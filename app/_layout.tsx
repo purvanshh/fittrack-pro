@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import NotificationSetup from "../components/NotificationSetup";
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import { StepProvider } from "../context/StepContext";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 
 // Keep splash screen visible while loading
@@ -69,7 +70,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <RootLayoutContent />
+        <StepProvider>
+          <RootLayoutContent />
+        </StepProvider>
       </AuthProvider>
     </ThemeProvider>
   );

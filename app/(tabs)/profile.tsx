@@ -390,6 +390,39 @@ export default function ProfileScreen() {
                             )}
                         </View>
                     </View>
+
+                    {/* Step Goal */}
+                    <View style={[styles.goalCard, { backgroundColor: theme.colors.primary + '15' }]}>
+                        <View style={[styles.goalIcon, { backgroundColor: theme.colors.primary + '25' }]}>
+                            <Ionicons name="walk" size={24} color={theme.colors.primary} />
+                        </View>
+                        <View style={styles.goalContent}>
+                            <Text style={[styles.goalLabel, { color: theme.colors.textSecondary }]}>
+                                Daily Steps Goal
+                            </Text>
+                            {isEditing ? (
+                                <View style={styles.goalInputRow}>
+                                    <TextInput
+                                        style={[styles.goalInput, { color: theme.colors.text, backgroundColor: theme.colors.background + '80' }]}
+                                        keyboardType="number-pad"
+                                        value={editedProfile.goals.dailySteps?.toString() || '10000'}
+                                        onChangeText={(text) => {
+                                            const value = parseInt(text) || 0;
+                                            setEditedProfile({
+                                                ...editedProfile,
+                                                goals: { ...editedProfile.goals, dailySteps: value },
+                                            });
+                                        }}
+                                    />
+                                    <Text style={[styles.goalUnit, { color: theme.colors.textSecondary }]}>steps</Text>
+                                </View>
+                            ) : (
+                                <Text style={[styles.goalValue, { color: theme.colors.text }]}>
+                                    {profile.goals.dailySteps || 10000} steps
+                                </Text>
+                            )}
+                        </View>
+                    </View>
                 </GlassCard>
 
                 {/* Personal Details */}
