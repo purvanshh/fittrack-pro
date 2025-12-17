@@ -83,6 +83,27 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="steps"
+                options={{
+                    title: 'Steps',
+                    tabBarIcon: ({ color, focused }) => (
+                        <View style={[
+                            styles.iconContainer,
+                            focused && [
+                                styles.activeIcon,
+                                { backgroundColor: theme.colors.primary + '25' },
+                            ]
+                        ]}>
+                            <Ionicons
+                                name={focused ? 'walk' : 'walk-outline'}
+                                size={24}
+                                color={focused ? theme.colors.primary : color}
+                            />
+                        </View>
+                    ),
+                }}
+            />
+            <Tabs.Screen
                 name="workout"
                 options={{
                     title: 'Workout',
